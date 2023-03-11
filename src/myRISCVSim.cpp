@@ -126,7 +126,6 @@ int Loaded_Data;
 int Imm_U;
 int Imm_B;
 int Imm_J;
-int Branch_Target;
 
 
 void run_riscvsim() {
@@ -356,7 +355,7 @@ void decode() {
 		case(Jtype):{
 			controls.RFWrite= Write;
 			controls.ResultSelect= From_PC;
-			controls.BrachTraget= Branch_ImmJ;
+			controls.BranchTarget= Branch_ImmJ;
 			controls.IsBranch= Branched;
 			controls.MemOp=NoMEMOp;
 		}
@@ -366,7 +365,7 @@ void decode() {
 			controls.RFWrite= Write;
 			controls.ResultSelect= From_ImmU;
 			controls.ALUOp=0;
-			controls.isbranch=NoBranch;
+			controls.IsBranch=NoBranch;
 		}
 
 		// U-type - lui
@@ -374,7 +373,7 @@ void decode() {
 			controls.RFWrite= Write;
 			controls.ResultSelect= From_ImmU;
 			controls.MemOp= NoMEMOp;
-			controls.isbranch=NoBranch;
+			controls.IsBranch=NoBranch;
 		}
 		
 		// Selects OP2 for ALU.
@@ -448,10 +447,10 @@ void execute() {
 			break;
 		}
 	}
-	if(BranchTarget == Branch_ImmJ){
+	if(controls.BranchTarget == Branch_ImmJ){
 		BranchTarget_Addr = Imm_J + PC;	
 	}
-	else if (BranchTarget == Branch_ImmB){
+	else if (controls.BranchTarget == Branch_ImmB){
 		BranchTarget_Addr = Imm_B + PC;
 	}
 	if(controls.IsBranch == Branched){
@@ -535,7 +534,22 @@ void write_back() {
 			}
 		}
 	}
-
+	
+	switch(controls.IsBranch)
+	{
+		case(NoBranch):{
+			PC = PC + 4;
+			break;
+		}
+		case(Branched):{
+			PC = PC + BranchTarget_Addr;
+			break;
+		}
+		case(Branch_From_ALU):{
+			PC = ALUresult;
+			break;
+		}
+	}
 }
 
 
