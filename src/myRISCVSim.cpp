@@ -18,6 +18,7 @@ Date:
 #include "myRISCVSim.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 //Register file
 static unsigned int X[32];
@@ -48,8 +49,8 @@ static unsigned int operand2;
 
 // For Op2.
 #define Op2_RF 0
-#define OP2_Imm 1
-#define OP2_ImmS 2
+#define Op2_Imm 1
+#define Op2_ImmS 2
 
 
 // For IsBranch.
@@ -80,7 +81,6 @@ static unsigned int operand2;
 #define Add_op 0
 #define Sll_op 1
 #define	Slt_op 2
-#define Sltu_op 3
 #define Xor_op 4
 #define Srl_op 5 
 #define Or_op 6 
@@ -122,7 +122,7 @@ static unsigned int regdestiny;
 static unsigned int SwOp2;
 int ALUresult;
 int Loaded_Data;
-
+int Imm_U;
 
 
 
@@ -226,8 +226,9 @@ void decode() {
 	immB = sign_extender(immB, 12);
 	
 	int immU = extract_bits(12,31);
-	immU = sign_extender(immU, 19);
-		
+	immU = sign_extender(immU, 19) << 12;
+	Imm_U = immU;
+
 	int immJ = extract_bits(31,31) << 20;
 	immJ += (extract_bits(12,19) << 13);
 	immJ += (extract_bits(20,20) << 12);	
@@ -262,7 +263,7 @@ void decode() {
 	// I-type - JALR
 	case(ItypeJ):{
 		controls.ALUOp = 0;
-		controls.Op2Select = OP2_Imm;
+		controls.Op2Select = Op2_Imm;
 		controls.ResultSelect = From_PC;
 		controls.MemOp = NoMEMOp;
 		controls.RFWrite = Write;
@@ -282,13 +283,13 @@ void decode() {
 		func3 = extract_bits(12,14);	
 		switch(func3){
 			case(0):{
-				controls.MEMOp = MEM_lb;
+				controls.MemOp = MEM_lb;
 			}
 			case(1):{
-				controls.MEMOp = MEM_lh;
+				controls.MemOp = MEM_lh;
 			}
 			case(2):{
-				controls.MEMOp = MEM_lw;
+				controls.MemOp = MEM_lw;
 			}
 		}
 		break;
@@ -318,14 +319,14 @@ void decode() {
 
 		func3 = extract_bits(12,14);	
 		switch(func3){
-			case(0){
-				controls.MEMOp = MEM_sb;
+			case(0):{
+				controls.MemOp = MEM_sb;
 			}
-			case(1){
-				controls.MEMOp = MEM_sh;
+			case(1):{
+				controls.MemOp = MEM_sh;
 			}
-			case(2){
-				controls.MEMOp = MEM_sw;
+			case(2):{
+				controls.MemOp = MEM_sw;
 			}
 		}
 
@@ -350,8 +351,8 @@ void decode() {
 	}
 
 	// U-type - lui
-	case(UtypeB):{
-		instruction_type = 8
+	case(UtypeL):{
+		instruction_type = 8;
 	}
 		
 	// Selects OP2 for ALU.
@@ -364,8 +365,8 @@ void decode() {
 			operand2 = imm;
 			break;
 		}
-		case(Op2_Imms):{
-			operand2 = imms;
+		case(Op2_ImmS):{
+			operand2 = immS;
 			break;
 		}
 	}
@@ -376,89 +377,89 @@ void decode() {
 void execute() {
 	int add,sub,_xor,_or,_and,sll,sra,slt,sltu;
 	unsigned int srl;
+
+	add = operand1 + operand2;
+	sub = operand1 - operand2;
+	_xor = operand1 ^ operand2;
+	_or = operand1 | operand2;
+	_and = operand1 & operand2;
+	sll = operand1 << operand2;
+	srl = (unsigned int)operand1 >> operand2;
+	sra = operand1 >> operand2;
+	slt = (operand1 < operand2)? 1 : 0 ;
 	
-		add = operand1 + operand2;
-
-		sub = operand1 - operand2;
-
-		_xor = operand1 ^ operand2;
-
-		_or = operand1 | operand2;
-
-		_and = operand1 & operand2;
-
-		sll = operand1 << operand2;
-
-		srl = (unsigned int)operand1 >> operand2;
-
-		sra = operand1 >> operand2;
-
-		slt = (operand1 < operand2)? 1 : 0 ;
-
-		sltu = ((unsigned int)operand1 < (unsigned int)operand2)? 1 : 0;
-	
-	switch(controls.ALUOp)
-	{
-		case(Add_op):
-		{
+	switch(controls.ALUOp){
+		case(Add_op):{
 			ALUresult = add;
 			break;
 		}
-		case(Sub_op):
-		{
+		case(Sub_op):{
 			ALUresult = sub;
 			break;
 		}
-		case(Xor_op):
-		{
+		case(Xor_op):{
 			ALUresult = _xor;
 			break;
 		}
-		case(Or_op):
-		{
+		case(Or_op):{
 			ALUresult = _or;
 			break;
 		}
-		case(And_op):
-		{
+		case(And_op):{
 			ALUresult = _and;
 			break;
 		}
-		case(Sll_op):
-		{
+		case(Sll_op):{
 			ALUresult = sll;
 			break;
 		}
-		case(Srl_op):
-		{
+		case(Srl_op):{
 			ALUresult = srl;
 			break;
 		}
-		case(Sra_op):
-		{
+		case(Sra_op):{
 			ALUresult = sra;
 			break;
 		}
-		case(Slt_op):
-		{
+		case(Slt_op):{
 			ALUresult = slt;
-			break;
-		}
-		case(Sltu_op):
-		{
-			ALUresult = sltu;
 			break;
 		}
 	}
 
-
+	if(controls.IsBranch == Branched){
+			switch(controls.BranchType){
+				case(BEQ):{
+					if(ALUresult){
+						controls.IsBranch = NoBranch;
+					}
+					break;
+				}
+				case(BNE):{
+					if(!ALUresult){
+						controls.IsBranch = NoBranch;
+					}
+					break;
+				}
+				case(BGE):{
+					if(ALUresult && (1<<31)){
+						controls.IsBranch = NoBranch;
+					}
+				}
+				case(BLT):{
+					if(!(ALUresult && (1<<31))){
+						controls.IsBranch = NoBranch;
+					}
+				}
+			}
+	}
 }
 
 
 //perform the memory operation
 void mem() {
-	if(MemOp != NoMEMOp){
-		Loaded_Data = *((int*)&MEM[ALUresult])
+	if(controls.MemOp != NoMEMOp){
+		Loaded_Data = *((int*)&MEM[ALUresult]);
 		switch(controls.MemOp){
 			case(MEM_lh):{
 				Loaded_Data = Loaded_Data << 16;
@@ -470,7 +471,7 @@ void mem() {
 			}		
 			case(MEM_sw):{
 				int* tmp = (int*)&MEM[ALUresult];
-				*tmp = SwOp2
+				*tmp = SwOp2;
 				break;
 			}
 			case(MEM_sh):{
@@ -488,6 +489,22 @@ void mem() {
 }
 //writes the results back to register file
 void write_back() {
+	if(controls.RFWrite){
+		switch(controls.ResultSelect){
+			case(From_ALU):{
+				X[regdestiny] = ALUresult; 
+			}
+			case(From_ImmU):{
+				X[regdestiny] = Imm_U; 
+			}
+			case(From_MEM):{
+				X[regdestiny] = Loaded_Data; 
+			}
+			case(From_PC):{
+				X[regdestiny] = PC + 4; 
+			}
+		}
+	}
 }
 
 
