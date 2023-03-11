@@ -30,9 +30,14 @@ static unsigned int instruction_register;
 static unsigned int operand1;
 static unsigned int operand2;
 
+
+
+
 static unsigned int regdestiny;
 static unsigned int Swreg;
 
+
+// For Opcode.
 #define Rtype 51
 #define ItypeA 19
 #define ItypeL 3
@@ -40,15 +45,38 @@ static unsigned int Swreg;
 #define Stype 35
 #define Btype 99
 #define Jtype 111
-#define UtypeA 23
-#define UtypeB 55
+#define UtypeL 23
+#define UtypeA 55
 
 
+// For Op2.
+#define OP2_from_RF 0
+#define OP2_Imm 1
+#define OP2_ImmS 2
 
+
+// For IsBranch.
+#define NoBranch 0
+#define Branched 1
+#define Branch_with_ALU 2
+
+// For ResultSelect.
+#define from_ALU 0
+#define from_ImmU 1
+#define from_MEM 2
+#define from_PC 3
+
+// For RFwrite
+#define No_RF 0
+#define Yes_RF 1
+
+
+// All control signals.
 typedef struct{
 	unsigned int ALUOp;
 	unsigned int IsBranch;
 	unsigned int MemOp;
+	unsigned int Memon;
 	unsigned int Op2select;
 	unsigned int ResultSelect;
 	unsigned int BranchTarget;
@@ -81,6 +109,21 @@ void run_riscvsim() {
 // it is used to set the reset values
 //reset all registers and memory content to 0
 void reset_proc() {
+	for(int i=0; i<32; i++){
+		X[i]=0;
+	}
+	for(int i=0; i<4000; i++){
+		MEM[i] = 0;
+	}
+
+	controls.ALUOp = -1;
+	controls.ISBranch = -1;
+	controls.MemOp = -1;
+	controls.Memon = -1;
+	controls.Op2select = -1;
+	controls.ResultSelect = -1;
+	controls.BranchTarget = -1;
+	controls.RFwrite = -1;
 }
 
 //load_program_memory reads the input memory, and pupulates the instruction 
@@ -126,57 +169,77 @@ void swi_exit() {
 void fetch() {
 	instruction_register = *((unsigned int*)&MEM[PC]);
 }
+
 //reads the instruction register, reads operand1, operand2 fromo register file, decides the operation to be performed in execute stage
 void decode() {
 	unsigned int func3, rs1, rs2, rd, opcode;	
+
 	opcode = extract_bits(0,6,0);
-	rs1 = extract_bits(15,19,0);
-	func3 = extract_bits(12,14,0);	
+
+	rs1 = extract_bits(15,19,0);	
 	rd = extract_bits(7,11,0);
 	rs2 = extract_bits(20,24,0);
-	ALUOp = func3;
+
+
+
+	int imm = extract_bits(20,31,1);
+	int immS = (extract_bits(25,31,1) << 5) + extract_bits(7,11,1);
+		
+	
 
 	switch(opcode){
 	
 	// R-type
 	case(Rtype){
-		unsigned int func7 = extract_bits(25,31,0);
+		controls.Op2select = Op2_from_RF;
+		controls.Memon = 0;
+		controls.IsBranch = NoBranch;
+		controls.ResultSelect = from_ALU;	
+		controls.RFwrite = 1;		
 
+		func3 = extract_bits(12,14,0);
+		controls.ALUOp = func3;
+
+		unsigned int func7 = extract_bits(25,31,0);
 		if(!(func7 && 1<<5)){
-			ALUOp += func7;	
+			controls.ALUOp += func7;	
 		}
 		
 		operand1 = X[rs1];	
-		operand2 = X[rs2];
 		regdestiny = rd;
 		break;
 	}
 
 	// I-type - JALR
 	case(ItypeJ){
-		ALUOp = 0;
+		controls.ALUOp = 0;
 	}
 	
 	// I-type - load
 	case(ItypeL){
-		ALUOp = 0;
+		controls.ALUOp = 0;
 	}
 
 	// I-type - Arithmetic
 	case(ItypeA){
+		controls.Op2select = Op2_Imm;
+
+		func3 = extract_bits(12,14,0);
+		controls.ALUOp = func3;
+	
 		operand1 = X[rs1];
-		operand2 = extract_bits(20,31,1);
 		break;
 	}
 		
 	// S-type
 	case(Stype){
+		controls.Op2select = Op2_Imms;
+		controls.ALUOp = 0;
+		controls.Memon =1;
+
 		operand1 = X[rs1];
-		int lower = extract_bits(7,11,1);
-		int higher = extract_bits(25,31,1);
-		higher << 5;
-		operand2 = higher+lower;
 		Swreg = rs2;
+
 	}
 	
 	// B-type
@@ -197,6 +260,19 @@ void decode() {
 	// U-type - lui
 	case(UtypeB){
 		instruction_type = 8
+	}
+		
+	// Selects OP2 for ALU.
+	switch(controls.Op2select){
+		case(Op2_from_RF){
+			operand2 = X[rs2];	
+		}
+		case(Op2_Imm){
+			operand2 = imm;
+		}
+		case(Op2_Imms){
+			operand2 = imms;
+		}
 	}
 }
 	
