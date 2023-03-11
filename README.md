@@ -1,2 +1,2 @@
 # RiscVsim
-A RiscV simulator
+A RiscV simulator in C.
