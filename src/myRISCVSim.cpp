@@ -1,4 +1,4 @@
-`
+
 /* 
 
 The project is developed as part of Computer Architecture class
@@ -76,14 +76,26 @@ static unsigned int operand2;
 #define MEM_lh 5
 #define MEM_lb 6
 
+// For ALUOp
+#define Add_op 0
+#define Sll_op 1
+#define	Slt_op 2
+#define Sltu_op 3
+#define Xor_op 4
+#define Srl_op 5 
+#define Or_op 6 
+#define And_op 7
+#define	Sub_op 32
+#define Sra_op 37
+
 // For BranchTarget.
 #define Branch_ImmJ 0
-#definr Branch_ImmB 1
+#define Branch_ImmB 1
 
 
 
 // All control signals.
-typedef struct{
+struct{
 	unsigned int ALUOp;
 	unsigned int IsBranch;
 	unsigned int MemOp;
@@ -219,7 +231,7 @@ void decode() {
 	switch(opcode){
 	
 	// R-type
-	case(Rtype){
+	case(Rtype):{
 		controls.Op2Select = Op2_RF;
 		controls.MemOp = NoMEMOp;
 		controls.IsBranch = NoBranch;
@@ -240,10 +252,10 @@ void decode() {
 	}
 
 	// I-type - JALR
-	case(ItypeJ){
+	case(ItypeJ):{
 		controls.ALUOp = 0;
-		controls.Op2Select = Op2_Imm;
-		controls.Resultselect = From_PC;
+		controls.Op2Select = OP2_Imm;
+		controls.ResultSelect = From_PC;
 		controls.MemOp = NoMEMOp;
 		controls.RFWrite = Write;
 		controls.IsBranch = Branch_From_ALU;
@@ -251,29 +263,29 @@ void decode() {
 	}
 	
 	// I-type - load
-	case(ItypeL){
+	case(ItypeL):{
 		controls.ALUOp = 0;
 		controls.Op2Select = Op2_RF;	
-		controls.Resultselect = From_MEM;
+		controls.ResultSelect = From_MEM;
 		controls.RFWrite = Write;
 		controls.IsBranch = NoBranch;
 
 		func3 = extract_bits(12,14);	
 		switch(func3){
-			case(0){
+			case(0):{
 				controls.MEMOp = MEM_lb;
 			}
-			case(1){
+			case(1):{
 				controls.MEMOp = MEM_lh;
 			}
-			case(2){
+			case(2):{
 				controls.MEMOp = MEM_lw;
 			}
 		}
 	}
 
 	// I-type - Arithmetic
-	case(ItypeA){
+	case(ItypeA):{
 		controls.Op2Select = Op2_Imm;
 		controls.MemOp = NoMEMOp;
 		controls.ResultSelect = From_ALU;
@@ -349,7 +361,87 @@ void decode() {
 }
 //executes the ALU operation based on ALUop
 void execute() {
+	int add,sub,_xor,_or,_and,sll,sra,slt,sltu;
+	unsigned int srl;
+	
+		add = operand1 + operand2;
+
+		sub = operand1 - operand2;
+
+		_xor = operand1 ^ operand2;
+
+		_or = operand1 | operand2;
+
+		_and = operand1 & operand2;
+
+		sll = operand1 << operand2;
+
+		srl = (unsigned int)operand1 >> operand2;
+
+		sra = operand1 >> operand2;
+
+		slt = (operand1 < operand2)? 1 : 0 ;
+
+		sltu = ((unsigned int)operand1 < (unsigned int)operand2)? 1 : 0;
+	
+	switch(controls.ALUOp)
+	{
+		case(Add_op):
+		{
+			ALUresult = add;
+			break;
+		}
+		case(Sub_op):
+		{
+			ALUresult = sub;
+			break;
+		}
+		case(Xor_op):
+		{
+			ALUresult = _xor;
+			break;
+		}
+		case(Or_op):
+		{
+			ALUresult = _or;
+			break;
+		}
+		case(And_op):
+		{
+			ALUresult = _and;
+			break;
+		}
+		case(Sll_op):
+		{
+			ALUresult = sll;
+			break;
+		}
+		case(Srl_op):
+		{
+			ALUresult = srl;
+			break;
+		}
+		case(Sra_op):
+		{
+			ALUresult = sra;
+			break;
+		}
+		case(Slt_op):
+		{
+			ALUresult = slt;
+			break;
+		}
+		case(Sltu_op):
+		{
+			ALUresult = sltu;
+			break;
+		}
+	}
+
+
 }
+
+
 //perform the memory operation
 void mem() {
 }
@@ -358,13 +450,13 @@ void write_back() {
 }
 
 
-int read_word(char *mem, unsigned int address) {
+int read_word(unsigned char *mem, unsigned int address) {
   int *data;
   data =  (int*) (mem + address);
   return *data;
 }
 
-void write_word(char *mem, unsigned int address, unsigned int data) {
+void write_word(unsigned char *mem, unsigned int address, unsigned int data) {
   int *data_p;
   data_p = (int*) (mem + address);
   *data_p = data;
