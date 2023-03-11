@@ -1,4 +1,4 @@
-
+`
 /* 
 
 The project is developed as part of Computer Architecture class
@@ -50,7 +50,7 @@ static unsigned int Swreg;
 
 
 // For Op2.
-#define OP2_from_RF 0
+#define Op2_RF 0
 #define OP2_Imm 1
 #define OP2_ImmS 2
 
@@ -58,17 +58,31 @@ static unsigned int Swreg;
 // For IsBranch.
 #define NoBranch 0
 #define Branched 1
-#define Branch_with_ALU 2
+#define Branch_From_ALU 2
 
 // For ResultSelect.
-#define from_ALU 0
-#define from_ImmU 1
-#define from_MEM 2
-#define from_PC 3
+#define From_ALU 0
+#define From_ImmU 1
+#define From_MEM 2
+#define From_PC 3
 
-// For RFwrite
-#define No_RF 0
-#define Yes_RF 1
+// For RFWrite
+#define NoWrite 0
+#define Write 1
+
+// For MemOp
+#define NoMEMOp 0
+#define MEM_sw 1
+#define MEM_sh 2
+#define MEM_sb 3
+#define MEM_lw 4
+#define MEM_lh 5
+#define MEM_lb 6
+
+// For BranchTarget.
+#define Branch_ImmJ 0
+#definr Branch_ImmB 1
+
 
 
 // All control signals.
@@ -76,11 +90,10 @@ typedef struct{
 	unsigned int ALUOp;
 	unsigned int IsBranch;
 	unsigned int MemOp;
-	unsigned int Memon;
-	unsigned int Op2select;
+	unsigned int Op2Select;
 	unsigned int ResultSelect;
 	unsigned int BranchTarget;
-	unsigned int RFwrite;
+	unsigned int RFWrite;
 }controls;
 
 
@@ -117,13 +130,12 @@ void reset_proc() {
 	}
 
 	controls.ALUOp = -1;
-	controls.ISBranch = -1;
+	controls.IsBranch = -1;
 	controls.MemOp = -1;
-	controls.Memon = -1;
-	controls.Op2select = -1;
+	controls.Op2Select = -1;
 	controls.ResultSelect = -1;
 	controls.BranchTarget = -1;
-	controls.RFwrite = -1;
+	controls.RFWrite = -1;
 }
 
 //load_program_memory reads the input memory, and pupulates the instruction 
@@ -174,28 +186,46 @@ void fetch() {
 void decode() {
 	unsigned int func3, rs1, rs2, rd, opcode;	
 
-	opcode = extract_bits(0,6,0);
+	opcode = extract_bits(0,6);
 
-	rs1 = extract_bits(15,19,0);	
-	rd = extract_bits(7,11,0);
-	rs2 = extract_bits(20,24,0);
+	rs1 = extract_bits(15,19);	
+	rd = extract_bits(7,11);
+	rs2 = extract_bits(20,24);
 
 
-
-	int imm = extract_bits(20,31,1);
-	int immS = (extract_bits(25,31,1) << 5) + extract_bits(7,11,1);
+	int imm = extract_bits(20, 31);
+	imm = sign_extender(imm, 11);
 		
+	int immS = extract_bits(25,31) << 5;
+	immS += extract_bits(7,11);
+	immS = sign_extender(immS, 11);
+	
+	int immB = (extract_bits(31,31) << 12);
+	immB += (extract_bits(7,7) << 11);
+	immB += (extract_bits(25,30) << 5);
+	immB += (extract_bits(8,11) << 1);
+	immB = sign_extender(immB, 12);
+	
+	int immU = extract_bits(12,31);
+	immU = sign_extender(immU, 19);
+		
+	int immJ = extract_bits(31,31) << 20;
+	immJ += (extract_bits(12,19) << 13);
+	immJ += (extract_bits(20,20) << 12);	
+	immJ += (extract_bits(21,30) << 1);
+	immJ = sign_extender(immJ, 20);
+	
 	
 
 	switch(opcode){
 	
 	// R-type
 	case(Rtype){
-		controls.Op2select = Op2_from_RF;
-		controls.Memon = 0;
+		controls.Op2Select = Op2_RF;
+		controls.MemOp = NoMEMOp;
 		controls.IsBranch = NoBranch;
-		controls.ResultSelect = from_ALU;	
-		controls.RFwrite = 1;		
+		controls.ResultSelect = From_ALU;	
+		controls.RFWrite = Write;		
 
 		func3 = extract_bits(12,14,0);
 		controls.ALUOp = func3;
@@ -213,16 +243,43 @@ void decode() {
 	// I-type - JALR
 	case(ItypeJ){
 		controls.ALUOp = 0;
+		controls.Op2Select = Op2_Imm;
+		controls.Resultselect = From_PC;
+		controls.MemOp = NoMEMOp;
+		controls.RFWrite = Write;
+		controls.IsBranch = Branch_From_ALU;
+		controls.BranchTarget = Branch_ImmJ;
 	}
 	
 	// I-type - load
 	case(ItypeL){
 		controls.ALUOp = 0;
+		controls.Op2Select = Op2_RF;	
+		controls.Resultselect = From_MEM;
+		controls.RFWrite = Write;
+		controls.IsBranch = NoBranch;
+
+		func3 = extract_bits(12,14,0);	
+		switch(func3){
+			case(0){
+				controls.MEMOp = MEM_lb;
+			}
+			case(1){
+				controls.MEMOp = MEM_lh;
+			}
+			case(2){
+				controls.MEMOp = MEM_lw;
+			}
+		}
 	}
 
 	// I-type - Arithmetic
 	case(ItypeA){
-		controls.Op2select = Op2_Imm;
+		controls.Op2Select = Op2_Imm;
+		controls.MemOp = NoMEMOp;
+		controls.ResultSelect = From_ALU;
+		controls.RFWrite = Write;
+		controls.IsBranch = NoBranch;
 
 		func3 = extract_bits(12,14,0);
 		controls.ALUOp = func3;
@@ -233,7 +290,7 @@ void decode() {
 		
 	// S-type
 	case(Stype){
-		controls.Op2select = Op2_Imms;
+		controls.Op2Select = Op2_Imms;
 		controls.ALUOp = 0;
 		controls.Memon =1;
 
@@ -263,8 +320,8 @@ void decode() {
 	}
 		
 	// Selects OP2 for ALU.
-	switch(controls.Op2select){
-		case(Op2_from_RF){
+	switch(controls.Op2Select){
+		case(Op2_RF){
 			operand2 = X[rs2];	
 		}
 		case(Op2_Imm){
@@ -302,15 +359,18 @@ void write_word(char *mem, unsigned int address, unsigned int data) {
 
 
 
-
-int extract_bits(int low, int high, int sign){
-	if(!sign){
-		unsigned int foo = instruction_register;
-	}	
-	else{
-		int foo = instruction_register;
-	}
-	foo << 31 - high;
-	foo >> 31+low-high;
-	return (int)foo;
+unsigned int extract_bits(int low, int high){
+	unsigned int foo = instruction_register;
+	foo = foo << (31 - high);
+	foo = foo >> (31+low-high);
+	return foo;
 }
+
+
+int sign_extender(int num, int MSB){
+	if(num && (1<<MSB)){
+		return num - pow(2, MSB+1);
+	}
+	return num;
+}
+	
