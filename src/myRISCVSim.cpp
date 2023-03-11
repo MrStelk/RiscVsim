@@ -93,6 +93,12 @@ static unsigned int operand2;
 #define Branch_ImmB 1
 
 
+// For BeanchType.
+#define BEQ 0
+#define BNE 1
+#define BGE 2
+#define BLT 3
+
 
 // All control signals.
 struct{
@@ -103,6 +109,7 @@ struct{
 	unsigned int ResultSelect;
 	unsigned int BranchTarget;
 	unsigned int RFWrite;
+	unsigned int BranchType;
 }controls;
 
 
@@ -114,7 +121,7 @@ unsigned int PC = 0;
 static unsigned int regdestiny;
 static unsigned int SwOp2;
 int ALUresult;
-
+int Loaded_Data;
 
 
 
@@ -147,6 +154,7 @@ void reset_proc() {
 	controls.ResultSelect = -1;
 	controls.BranchTarget = -1;
 	controls.RFWrite = -1;
+	controls.BranchType = -1;
 }
 
 //load_program_memory reads the input memory, and pupulates the instruction 
@@ -259,7 +267,8 @@ void decode() {
 		controls.MemOp = NoMEMOp;
 		controls.RFWrite = Write;
 		controls.IsBranch = Branch_From_ALU;
-		controls.BranchTarget = Branch_ImmJ;
+		controls.BranchTarget = Branch_ImmJ;\
+		break;
 	}
 	
 	// I-type - load
@@ -282,6 +291,7 @@ void decode() {
 				controls.MEMOp = MEM_lw;
 			}
 		}
+		break;
 	}
 
 	// I-type - Arithmetic
@@ -300,7 +310,7 @@ void decode() {
 	}
 		
 	// S-type
-	case(Stype){
+	case(Stype):{
 		controls.Op2Select = Op2_ImmS;
 		controls.ALUOp = 0;
 		controls.RFWrite = NoWrite;
@@ -321,39 +331,42 @@ void decode() {
 
 		operand1 = X[rs1];
 		SwOp2 = X[rs2];
-
+		break;
 	}
 	
 	// B-type
-	case(Btype){
+	case(Btype):{
 		instruction_type = 5;
 	}
 		
 	// J-type
-	case(Jtype){
+	case(Jtype):{
 		instruction_type = 6;
 	}
 	
 	// U-type - auipc
-	case(UtypeA){
+	case(UtypeA):{
 		instruction_type = 7;
 	}
 
 	// U-type - lui
-	case(UtypeB){
+	case(UtypeB):{
 		instruction_type = 8
 	}
 		
 	// Selects OP2 for ALU.
 	switch(controls.Op2Select){
-		case(Op2_RF){
-			operand2 = X[rs2];	
+		case(Op2_RF):{
+			operand2 = X[rs2];
+			break;	
 		}
-		case(Op2_Imm){
+		case(Op2_Imm):{
 			operand2 = imm;
+			break;
 		}
-		case(Op2_Imms){
+		case(Op2_Imms):{
 			operand2 = imms;
+			break;
 		}
 	}
 }
@@ -444,6 +457,34 @@ void execute() {
 
 //perform the memory operation
 void mem() {
+	if(MemOp != NoMEMOp){
+		Loaded_Data = *((int*)&MEM[ALUresult])
+		switch(controls.MemOp){
+			case(MEM_lh):{
+				Loaded_Data = Loaded_Data << 16;
+				break;
+			}
+			case(MEM_lb):{
+				Loaded_Data = Loaded_Data << 24;
+				break;
+			}		
+			case(MEM_sw):{
+				int* tmp = (int*)&MEM[ALUresult];
+				*tmp = SwOp2
+				break;
+			}
+			case(MEM_sh):{
+				char* tmp = (char*)&SwOp2;
+				MEM[ALUresult] = *tmp;
+				tmp++;
+				MEM[ALUresult+1] = *tmp;
+			}
+			case(MEM_sb):{
+				char*tmp = (char*)&SwOp2;
+				MEM[ALUresult] = *tmp;
+			}
+		}
+	}	
 }
 //writes the results back to register file
 void write_back() {
