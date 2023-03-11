@@ -123,8 +123,9 @@ static unsigned int SwOp2;
 int ALUresult;
 int Loaded_Data;
 int Imm_U;
-
-
+int Imm_B;
+int Imm_J;
+int Branch_Target;
 
 
 void run_riscvsim() {
@@ -224,7 +225,9 @@ void decode() {
 	immB += (extract_bits(25,30) << 5);
 	immB += (extract_bits(8,11) << 1);
 	immB = sign_extender(immB, 12);
-	
+	Imm_B = immB;
+
+
 	int immU = extract_bits(12,31);
 	immU = sign_extender(immU, 19) << 12;
 	Imm_U = immU;
@@ -234,7 +237,7 @@ void decode() {
 	immJ += (extract_bits(20,20) << 12);	
 	immJ += (extract_bits(21,30) << 1);
 	immJ = sign_extender(immJ, 20);
-	
+	Imm_J = immJ;
 	
 
 	switch(opcode){
@@ -487,6 +490,7 @@ void mem() {
 		}
 	}	
 }
+
 //writes the results back to register file
 void write_back() {
 	if(controls.RFWrite){
@@ -505,6 +509,7 @@ void write_back() {
 			}
 		}
 	}
+
 }
 
 
