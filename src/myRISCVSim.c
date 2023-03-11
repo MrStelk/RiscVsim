@@ -181,7 +181,10 @@ void decode() {
 	
 	// B-type
 	case(Btype){
-		instruction_type = 5;
+		operand1=X[rs1];
+		operand2=X[rs2];
+		ALUOp=32;
+		
 	}
 		
 	// J-type
