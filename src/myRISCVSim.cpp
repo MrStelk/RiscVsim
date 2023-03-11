@@ -116,6 +116,7 @@ struct{
 unsigned int extract_bits(int low, int high);
 int sign_extender(int num, int MSB);
 
+unsigned int BranchTarget_Addr;
 unsigned int instruction_type;
 unsigned int PC = 0;
 static unsigned int regdestiny;
@@ -239,140 +240,158 @@ void decode() {
 
 	switch(opcode){
 	
-	// R-type
-	case(Rtype):{
-		controls.Op2Select = Op2_RF;
-		controls.MemOp = NoMEMOp;
-		controls.IsBranch = NoBranch;
-		controls.ResultSelect = From_ALU;	
-		controls.RFWrite = Write;		
-
-		func3 = extract_bits(12,14);
-		controls.ALUOp = func3;
-
-		unsigned int func7 = extract_bits(25,31);
-		if(!(func7 && 1<<5)){
-			controls.ALUOp += func7;	
-		}
-		
-		operand1 = X[rs1];	
-		regdestiny = rd;
-		break;
-	}
-
-	// I-type - JALR
-	case(ItypeJ):{
-		controls.ALUOp = 0;
-		controls.Op2Select = Op2_Imm;
-		controls.ResultSelect = From_PC;
-		controls.MemOp = NoMEMOp;
-		controls.RFWrite = Write;
-		controls.IsBranch = Branch_From_ALU;
-		controls.BranchTarget = Branch_ImmJ;\
-		break;
-	}
+		// R-type
+		case(Rtype):{
+			controls.Op2Select = Op2_RF;
+			controls.MemOp = NoMEMOp;
+			controls.IsBranch = NoBranch;
+			controls.ResultSelect = From_ALU;	
+			controls.RFWrite = Write;		
 	
-	// I-type - load
-	case(ItypeL):{
-		controls.ALUOp = 0;
-		controls.Op2Select = Op2_RF;	
-		controls.ResultSelect = From_MEM;
-		controls.RFWrite = Write;
-		controls.IsBranch = NoBranch;
-
-		func3 = extract_bits(12,14);	
-		switch(func3){
-			case(0):{
-				controls.MemOp = MEM_lb;
-			}
-			case(1):{
-				controls.MemOp = MEM_lh;
-			}
-			case(2):{
-				controls.MemOp = MEM_lw;
-			}
-		}
-		break;
-	}
-
-	// I-type - Arithmetic
-	case(ItypeA):{
-		controls.Op2Select = Op2_Imm;
-		controls.MemOp = NoMEMOp;
-		controls.ResultSelect = From_ALU;
-		controls.RFWrite = Write;
-		controls.IsBranch = NoBranch;
-
-		func3 = extract_bits(12,14);
-		controls.ALUOp = func3;
+			func3 = extract_bits(12,14);
+			controls.ALUOp = func3;
 	
-		operand1 = X[rs1];
-		break;
-	}
-		
-	// S-type
-	case(Stype):{
-		controls.Op2Select = Op2_ImmS;
-		controls.ALUOp = 0;
-		controls.RFWrite = NoWrite;
-		controls.IsBranch = NoBranch;
-
-		func3 = extract_bits(12,14);	
-		switch(func3){
-			case(0):{
-				controls.MemOp = MEM_sb;
+			unsigned int func7 = extract_bits(25,31);
+			if(!(func7 && 1<<5)){
+				controls.ALUOp += func7;	
 			}
-			case(1):{
-				controls.MemOp = MEM_sh;
-			}
-			case(2):{
-				controls.MemOp = MEM_sw;
-			}
-		}
+			
+			operand1 = X[rs1];	
+			regdestiny = rd;
+			break;
+		}	
 
-		operand1 = X[rs1];
-		SwOp2 = X[rs2];
-		break;
-	}
-	
-	// B-type
-	case(Btype):{
-		instruction_type = 5;
-	}
-		
-	// J-type
-	case(Jtype):{
-		instruction_type = 6;
-	}
-	
-	// U-type - auipc
-	case(UtypeA):{
-		instruction_type = 7;
-	}
-
-	// U-type - lui
-	case(UtypeL):{
-		instruction_type = 8;
-	}
-		
-	// Selects OP2 for ALU.
-	switch(controls.Op2Select){
-		case(Op2_RF):{
-			operand2 = X[rs2];
-			break;	
-		}
-		case(Op2_Imm):{
-			operand2 = imm;
+		// I-type - JALR
+		case(ItypeJ):{
+			controls.ALUOp = 0;
+			controls.Op2Select = Op2_Imm;
+			controls.ResultSelect = From_PC;
+			controls.MemOp = NoMEMOp;
+			controls.RFWrite = Write;
+			controls.IsBranch = Branch_From_ALU;
+			controls.BranchTarget = Branch_ImmJ;\
 			break;
 		}
-		case(Op2_ImmS):{
-			operand2 = immS;
+	
+		// I-type - load
+		case(ItypeL):{
+			controls.ALUOp = 0;
+			controls.Op2Select = Op2_RF;	
+			controls.ResultSelect = From_MEM;
+			controls.RFWrite = Write;
+			controls.IsBranch = NoBranch;
+
+			func3 = extract_bits(12,14);	
+			switch(func3){
+				case(0):{
+					controls.MemOp = MEM_lb;
+				}
+				case(1):{
+					controls.MemOp = MEM_lh;
+				}
+				case(2):{
+					controls.MemOp = MEM_lw;
+				}
+			}
 			break;
+		}	
+	
+		// I-type - Arithmetic
+		case(ItypeA):{
+			controls.Op2Select = Op2_Imm;
+			controls.MemOp = NoMEMOp;
+			controls.ResultSelect = From_ALU;
+			controls.RFWrite = Write;
+			controls.IsBranch = NoBranch;
+
+			func3 = extract_bits(12,14);
+			controls.ALUOp = func3;
+	
+			operand1 = X[rs1];
+			break;
+		}
+		
+		// S-type
+		case(Stype):{
+			controls.Op2Select = Op2_ImmS;
+			controls.ALUOp = 0;
+			controls.RFWrite = NoWrite;
+			controls.IsBranch = NoBranch;
+
+			func3 = extract_bits(12,14);	
+			switch(func3){
+				case(0):{
+					controls.MemOp = MEM_sb;
+				}
+				case(1):{
+					controls.MemOp = MEM_sh;
+				}
+				case(2):{
+					controls.MemOp = MEM_sw;
+				}
+			}
+
+			operand1 = X[rs1];
+			SwOp2 = X[rs2];
+			break;
+		}
+	
+		// B-type
+		case(Btype):{
+			operand1=X[rs1];
+			operand2=X[rs2];
+			func3 = extract_bits(12,14);
+			controls.ALUOp=32;
+			controls.Op2Select= Op2_RF;
+			controls.RFWrite= NoWrite;
+			controls.IsBranch= Branched;
+			controls.BranchTarget= Branch_ImmB;
+        		controls.MemOp=NoMEMOp;
+		}
+		
+		// J-type
+		case(Jtype):{
+			controls.RFWrite= Write;
+			controls.ResultSelect= From_PC;
+			controls.BrachTraget= Branch_ImmJ;
+			controls.IsBranch= Branched;
+			controls.MemOp=NoMEMOp;
+		}
+	
+		// U-type - auipc
+		case(UtypeA):{
+			controls.RFWrite= Write;
+			controls.ResultSelect= From_ImmU;
+			controls.ALUOp=0;
+			controls.isbranch=NoBranch;
+		}
+
+		// U-type - lui
+		case(UtypeL):{
+			controls.RFWrite= Write;
+			controls.ResultSelect= From_ImmU;
+			controls.MemOp= NoMEMOp;
+			controls.isbranch=NoBranch;
+		}
+		
+		// Selects OP2 for ALU.
+		switch(controls.Op2Select){
+			case(Op2_RF):{
+				operand2 = X[rs2];
+				break;	
+			}
+			case(Op2_Imm):{
+				operand2 = imm;
+				break;
+			}
+			case(Op2_ImmS):{
+				operand2 = immS;
+				break;
+			}
 		}
 	}
 }
-	
-}
+
 //executes the ALU operation based on ALUop
 void execute() {
 	int add,sub,_xor,_or,_and,sll,sra,slt,sltu;
@@ -426,32 +445,39 @@ void execute() {
 			break;
 		}
 	}
-
+	if(BranchTarget == Branch_ImmJ){
+		BranchTarget_Addr = Imm_J + PC;	
+	}
+	else if (BranchTarget == Branch_ImmB){
+		BranchTarget_Addr = Imm_B + PC;
+	}
 	if(controls.IsBranch == Branched){
-			switch(controls.BranchType){
-				case(BEQ):{
-					if(ALUresult){
-						controls.IsBranch = NoBranch;
-					}
-					break;
+		switch(controls.BranchType){
+			case(BEQ):{
+				if(ALUresult){
+					controls.IsBranch = NoBranch;
 				}
-				case(BNE):{
-					if(!ALUresult){
-						controls.IsBranch = NoBranch;
-					}
-					break;
-				}
-				case(BGE):{
-					if(ALUresult && (1<<31)){
-						controls.IsBranch = NoBranch;
-					}
-				}
-				case(BLT):{
-					if(!(ALUresult && (1<<31))){
-						controls.IsBranch = NoBranch;
-					}
-				}
+				break;
 			}
+			case(BNE):{
+				if(!ALUresult){
+					controls.IsBranch = NoBranch;
+				}
+				break;
+			}
+			case(BGE):{
+				if(ALUresult && (1<<31)){
+					controls.IsBranch = NoBranch;		
+				}
+				break;
+			}
+			case(BLT):{
+				if(!(ALUresult && (1<<31))){
+					controls.IsBranch = NoBranch;
+				}
+				break;
+			}
+		}
 	}
 }
 
