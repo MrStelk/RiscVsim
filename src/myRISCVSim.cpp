@@ -33,9 +33,6 @@ static unsigned int operand2;
 
 
 
-static unsigned int regdestiny;
-static unsigned int Swreg;
-
 
 // For Opcode.
 #define Rtype 51
@@ -97,12 +94,14 @@ typedef struct{
 }controls;
 
 
-unsigned int extract_bits(int low, int high)
-
+unsigned int extract_bits(int low, int high);
+int sign_extender(int num, int MSB);
 
 unsigned int instruction_type;
 unsigned int PC = 0;
-
+static unsigned int regdestiny;
+static unsigned int SwOp2;
+int ALUresult;
 
 
 
@@ -227,10 +226,10 @@ void decode() {
 		controls.ResultSelect = From_ALU;	
 		controls.RFWrite = Write;		
 
-		func3 = extract_bits(12,14,0);
+		func3 = extract_bits(12,14);
 		controls.ALUOp = func3;
 
-		unsigned int func7 = extract_bits(25,31,0);
+		unsigned int func7 = extract_bits(25,31);
 		if(!(func7 && 1<<5)){
 			controls.ALUOp += func7;	
 		}
@@ -259,7 +258,7 @@ void decode() {
 		controls.RFWrite = Write;
 		controls.IsBranch = NoBranch;
 
-		func3 = extract_bits(12,14,0);	
+		func3 = extract_bits(12,14);	
 		switch(func3){
 			case(0){
 				controls.MEMOp = MEM_lb;
@@ -281,7 +280,7 @@ void decode() {
 		controls.RFWrite = Write;
 		controls.IsBranch = NoBranch;
 
-		func3 = extract_bits(12,14,0);
+		func3 = extract_bits(12,14);
 		controls.ALUOp = func3;
 	
 		operand1 = X[rs1];
@@ -290,12 +289,26 @@ void decode() {
 		
 	// S-type
 	case(Stype){
-		controls.Op2Select = Op2_Imms;
+		controls.Op2Select = Op2_ImmS;
 		controls.ALUOp = 0;
-		controls.Memon =1;
+		controls.RFWrite = NoWrite;
+		controls.IsBranch = NoBranch;
+
+		func3 = extract_bits(12,14);	
+		switch(func3){
+			case(0){
+				controls.MEMOp = MEM_sb;
+			}
+			case(1){
+				controls.MEMOp = MEM_sh;
+			}
+			case(2){
+				controls.MEMOp = MEM_sw;
+			}
+		}
 
 		operand1 = X[rs1];
-		Swreg = rs2;
+		SwOp2 = X[rs2];
 
 	}
 	
