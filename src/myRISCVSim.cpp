@@ -134,7 +134,7 @@ int Imm_J;
 
 void run_riscvsim() {
   while(1) {
-  	cout << "\n\n---------New cycle\n---------\n";
+  	cout << "\n\n---------New cycle---------\n";
     fetch();
     decode();
     execute();
@@ -205,19 +205,19 @@ void swi_exit() {
 
 //reads from the instruction memory and updates the instruction register
 void fetch() {
-	cout << "----Entering fetch\n";
+	cout << "ssFetch:\n";
 	instruction_register = *((unsigned int*)&MEM[PC]);
-	cout << "instruction_register : ";
+	cout << "		instruction_register : ";
 	printf("%x\n", instruction_register);
-	cout << "PC:" << PC<<endl;
+	cout << "		PC:" << PC<<endl;
 }
 
 //reads the instruction register, reads operand1, operand2 fromo register file, decides the operation to be performed in execute stage
 void decode() {
-	cout << "----Entering decode\n";
+	cout << "\n\nDecode:\n";
 	unsigned int func3, rs1, rs2, rd, opcode;	
 
-	opcode = extract_bits(0,6);cout <<"opcode:"<<opcode<<endl;
+	opcode = extract_bits(0,6);cout <<"		opcode:"<<opcode<<endl;
 
 	rs1 = extract_bits(15,19);	
 	regdestiny = rd = extract_bits(7,11);
@@ -318,8 +318,7 @@ void decode() {
 
 			func3 = extract_bits(12,14);
 			controls.ALUOp = func3;
-			cout << "func3:"<<func3<<endl;
-	
+			cout << "		Fun3:" << func3 << endl;
 			operand1 = X[rs1];
 			break;
 		}
@@ -416,14 +415,13 @@ void decode() {
 			break;
 		}
 	}
-	cout << "operand1:" << operand1<<endl;
-	cout << "operand2:" << operand2 << endl;
-	cout << "----Exiting decode\n";
+	cout << "		operand1:" << operand1<<endl;
+	cout << "		operand2:" << operand2 << endl;
 }
 
 //executes the ALU operation based on ALUop
 void execute(){
-	cout << "\n\n----Entering execute\n";
+	cout << "\n\nExecute:\n";
 	int add,sub,_xor,_or,_and,sll,sra,slt,sltu;
 	unsigned int srl;
 
@@ -437,6 +435,7 @@ void execute(){
 	sra = operand1 >> operand2;
 	slt = (operand1 < operand2)? 1 : 0 ;
 	
+	cout << "		ALUop:" << controls.ALUOp << endl;
 	switch(controls.ALUOp){
 		case(Add_op):{
 			ALUresult = add;
@@ -475,7 +474,7 @@ void execute(){
 			break;
 		}
 	}
-	cout << "ALUresult:" << ALUresult<<endl;
+	cout << "		ALUresult:" << ALUresult<<endl;
 	if(controls.BranchTarget == Branch_ImmJ){
 		BranchTarget_Addr = Imm_J + PC;	
 	}
@@ -510,13 +509,12 @@ void execute(){
 			}
 		}
 	}
-	cout << "\n\n----Exiting execute\n";
 }
 
 
 //perform the memory operation
 void mem() {
-	cout << "\n\n----Entering Memory";
+	cout << "\n\nMemory:\n";
 	if(controls.MemOp != NoMEMOp){
 		Loaded_Data = *((int*)&MEM[ALUresult]);
 		switch(controls.MemOp){
@@ -547,13 +545,12 @@ void mem() {
 			}
 		}
 	}
-	cout << "\n\n----Exiting Memory";	
 }
 
 //writes the results back to register file
 void write_back() {
-	cout << "\n\n----Entering write_back\n";
-	cout <<"rd:" << regdestiny<<endl;
+	cout << "\n\nWrite_back:\n";
+	cout <<"		rd:" << regdestiny<<endl;
 	if(regdestiny){
 		if(controls.RFWrite){
 			switch(controls.ResultSelect){
@@ -596,8 +593,7 @@ void write_back() {
 			break;
 		}
 	}
-	cout << "X[rd]:" << X[regdestiny] << endl;;
-	cout << "----Exiciting write_back\n";
+	cout << "		X[rd]:" << X[regdestiny] << endl;;
 }
 
 
