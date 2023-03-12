@@ -26,7 +26,7 @@ using namespace std;
 static int X[32];
 //flags
 //memory
-static unsigned char MEM[4000];
+static unsigned char MEM[4000000];
 
 //intermediate datapath and control path signals
 static unsigned int instruction_register;
@@ -515,6 +515,7 @@ void execute(){
 //perform the memory operation
 void mem() {
 	cout << "\n\nMemory:\n";
+	cout << "		MemOp: " << controls.MemOp << endl;
 	if(controls.MemOp != NoMEMOp){
 		Loaded_Data = *((int*)&MEM[ALUresult]);
 		switch(controls.MemOp){
@@ -536,11 +537,15 @@ void mem() {
 				MEM[ALUresult] = *tmp;
 				tmp++;
 				MEM[ALUresult+1] = *tmp;
+				int*tm = (int*)&MEM[ALUresult];
+				cout << "		Stored: " << *tm << endl;
 				break;
 			}
 			case(MEM_sb):{
 				char*tmp = (char*)&SwOp2;
 				MEM[ALUresult] = *tmp;
+				int*tm = (int*)&MEM[ALUresult];
+				cout << "		Stored: " << *tm << endl;
 				break;
 			}
 		}
