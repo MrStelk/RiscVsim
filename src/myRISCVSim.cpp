@@ -14,11 +14,13 @@ Date:
 /* myRISCVSim.cpp
    Purpose of this file: implementation file for myRISCVSim
 */
-
+#include "iostream"
 #include "myRISCVSim.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
+using namespace std;
 
 //Register file
 static unsigned int X[32];
@@ -45,7 +47,7 @@ static unsigned int operand2;
 #define Jtype 111
 #define UtypeL 23
 #define UtypeA 55
-
+#define EXIT 32
 
 // For Op2.
 #define Op2_RF 0
@@ -115,6 +117,7 @@ struct{
 
 unsigned int extract_bits(int low, int high);
 int sign_extender(int num, int MSB);
+void viewMEM(int low, int a);
 
 unsigned int BranchTarget_Addr;
 unsigned int instruction_type;
@@ -130,6 +133,7 @@ int Imm_J;
 
 void run_riscvsim() {
   while(1) {
+  	cout << "\nNew cycle\n---------\n";
     fetch();
     decode();
     execute();
@@ -169,8 +173,9 @@ void load_program_memory(char *file_name) {
     exit(1);
   }
   while(fscanf(fp, "%x %x", &address, &instruction) != EOF) {
-    write_word(MEM, address, instruction);
+    write_word(&MEM[0], address, instruction);
   }
+  viewMEM(0,8);
   fclose(fp);
 }
 
@@ -185,31 +190,37 @@ void write_data_memory() {
   }
   
   for(i=0; i < 4000; i = i+4){
-    fprintf(fp, "%x %x\n", i, read_word(MEM, i));
+    fprintf(fp, "%x %x\n", i, read_word(&MEM[0], i));
   }
   fclose(fp);
 }
 
 //should be called when instruction is swi_exit
 void swi_exit() {
-  write_data_memory();
+//  write_data_memory();
+	cout << X[1]<<endl;
   exit(0);
 }
 
 
 //reads from the instruction memory and updates the instruction register
 void fetch() {
+	cout << "----Entering fetch\n";
 	instruction_register = *((unsigned int*)&MEM[PC]);
+	cout << "instruction_register : ";
+	printf("%x\n", instruction_register);
+	cout << "PC:" << PC<<endl;
 }
 
 //reads the instruction register, reads operand1, operand2 fromo register file, decides the operation to be performed in execute stage
 void decode() {
+	cout << "----Entering decode\n";
 	unsigned int func3, rs1, rs2, rd, opcode;	
 
-	opcode = extract_bits(0,6);
+	opcode = extract_bits(0,6);cout <<"opcode:"<<opcode<<endl;
 
 	rs1 = extract_bits(15,19);	
-	rd = extract_bits(7,11);
+	regdestiny = rd = extract_bits(7,11);
 	rs2 = extract_bits(20,24);
 
 
@@ -241,7 +252,6 @@ void decode() {
 	
 
 	switch(opcode){
-	
 		// R-type
 		case(Rtype):{
 			controls.Op2Select = Op2_RF;
@@ -254,7 +264,7 @@ void decode() {
 			controls.ALUOp = func3;
 	
 			unsigned int func7 = extract_bits(25,31);
-			if(!(func7 && 1<<5)){
+			if(!(func7 & 1<<5)){
 				controls.ALUOp += func7;	
 			}
 			
@@ -308,6 +318,7 @@ void decode() {
 
 			func3 = extract_bits(12,14);
 			controls.ALUOp = func3;
+			cout << "func3:"<<func3<<endl;
 	
 			operand1 = X[rs1];
 			break;
@@ -349,6 +360,7 @@ void decode() {
 			controls.IsBranch= Branched;
 			controls.BranchTarget= Branch_ImmB;
         		controls.MemOp=NoMEMOp;
+			break;
 		}
 		
 		// J-type
@@ -358,6 +370,7 @@ void decode() {
 			controls.BranchTarget= Branch_ImmJ;
 			controls.IsBranch= Branched;
 			controls.MemOp=NoMEMOp;
+			break;
 		}
 	
 		// U-type - auipc
@@ -366,6 +379,8 @@ void decode() {
 			controls.ResultSelect= From_ImmU;
 			controls.ALUOp=0;
 			controls.IsBranch=NoBranch;
+			controls.MemOp=NoMEMOp;
+			break;
 		}
 
 		// U-type - lui
@@ -374,28 +389,38 @@ void decode() {
 			controls.ResultSelect= From_ImmU;
 			controls.MemOp= NoMEMOp;
 			controls.IsBranch=NoBranch;
+			break;
 		}
 		
-		// Selects OP2 for ALU.
-		switch(controls.Op2Select){
-			case(Op2_RF):{
-				operand2 = X[rs2];
-				break;	
-			}
-			case(Op2_Imm):{
-				operand2 = imm;
-				break;
-			}
-			case(Op2_ImmS):{
-				operand2 = immS;
-				break;
-			}
+		// EXIT
+		case(EXIT):{
+			swi_exit();	
 		}
 	}
+
+	// Selects OP2 for ALU.
+	switch(controls.Op2Select){
+		case(Op2_RF):{
+			operand2 = X[rs2];
+			break;	
+		}
+		case(Op2_Imm):{
+			operand2 = imm;
+			break;
+		}
+		case(Op2_ImmS):{
+			operand2 = immS;
+			break;
+		}
+	}
+	cout << "operand1:" << operand1<<endl;
+	cout << "operand2:" << operand2 << endl;
+	cout << "----Exiting decode\n";
 }
 
 //executes the ALU operation based on ALUop
-void execute() {
+void execute(){
+	cout << "\n\n----Entering execute\n";
 	int add,sub,_xor,_or,_and,sll,sra,slt,sltu;
 	unsigned int srl;
 
@@ -447,6 +472,7 @@ void execute() {
 			break;
 		}
 	}
+	cout << "ALUresult:" << ALUresult<<endl;
 	if(controls.BranchTarget == Branch_ImmJ){
 		BranchTarget_Addr = Imm_J + PC;	
 	}
@@ -468,24 +494,26 @@ void execute() {
 				break;
 			}
 			case(BGE):{
-				if(ALUresult && (1<<31)){
+				if(ALUresult & (1<<31)){
 					controls.IsBranch = NoBranch;		
 				}
 				break;
 			}
 			case(BLT):{
-				if(!(ALUresult && (1<<31))){
+				if(!(ALUresult & (1<<31))){
 					controls.IsBranch = NoBranch;
 				}
 				break;
 			}
 		}
 	}
+	cout << "\n\n----Exiting execute\n";
 }
 
 
 //perform the memory operation
 void mem() {
+	cout << "\n\n----Entering Memory";
 	if(controls.MemOp != NoMEMOp){
 		Loaded_Data = *((int*)&MEM[ALUresult]);
 		switch(controls.MemOp){
@@ -513,24 +541,29 @@ void mem() {
 				MEM[ALUresult] = *tmp;
 			}
 		}
-	}	
+	}
+	cout << "\n\n----Exiting Memory";	
 }
 
 //writes the results back to register file
 void write_back() {
-	if(controls.RFWrite){
-		switch(controls.ResultSelect){
-			case(From_ALU):{
-				X[regdestiny] = ALUresult; 
-			}
-			case(From_ImmU):{
-				X[regdestiny] = Imm_U; 
-			}
-			case(From_MEM):{
-				X[regdestiny] = Loaded_Data; 
-			}
-			case(From_PC):{
-				X[regdestiny] = PC + 4; 
+	cout << "\n\n----Entering write_back\n";
+	cout <<"rd:" << regdestiny<<endl;
+	if(regdestiny){
+		if(controls.RFWrite){
+			switch(controls.ResultSelect){
+				case(From_ALU):{
+					X[regdestiny] = ALUresult; 
+				}
+				case(From_ImmU):{
+					X[regdestiny] = Imm_U; 
+				}
+				case(From_MEM):{
+					X[regdestiny] = Loaded_Data; 
+				}
+				case(From_PC):{
+					X[regdestiny] = PC + 4; 
+				}
 			}
 		}
 	}
@@ -576,9 +609,15 @@ unsigned int extract_bits(int low, int high){
 
 
 int sign_extender(int num, int MSB){
-	if(num && (1<<MSB)){
+	if(num & (1<<MSB)){
 		return num - pow(2, MSB+1);
 	}
 	return num;
+}
+
+void viewMEM(int low, int a){
+	for(int* p = (int*)&MEM[low], q=a; q>0; p++, q-=4){
+		printf("%08x\n", *p);
+	}
 }
 	

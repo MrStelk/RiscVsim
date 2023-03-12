@@ -15,10 +15,13 @@ Date:
    invokes the simulator
 */
 
-
+#include "iostream"
 #include "myRISCVSim.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+using namespace std;
+
 
 int main(int argc, char** argv) {
   char* prog_mem_file; 
