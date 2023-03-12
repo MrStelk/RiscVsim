@@ -14,7 +14,7 @@ Date:
 /* myRISCVSim.cpp
    Purpose of this file: implementation file for myRISCVSim
 */
-#include "iostream"
+#include <bits/stdc++.h>
 #include "myRISCVSim.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,7 +28,7 @@ static int X[32];
 //flags
 //memory
 static unsigned char MEM[4000000];
-map<int , unsigned char > DMEM;
+map<int,unsigned char > DMEM;
 
 //intermediate datapath and control path signals
 static unsigned int instruction_register;
@@ -47,8 +47,8 @@ static int operand2;
 #define Stype 35
 #define Btype 99
 #define Jtype 111
-#define UtypeL 23
-#define UtypeA 55
+#define UtypeL 55
+#define UtypeA 23
 #define EXIT 32
 
 // For Op2.
@@ -101,8 +101,8 @@ static int operand2;
 // For BeanchType.
 #define BEQ 0
 #define BNE 1
-#define BGE 2
-#define BLT 3
+#define BGE 5
+#define BLT 4
 
 
 // All control signals.
@@ -121,7 +121,8 @@ struct{
 unsigned int extract_bits(int low, int high);
 unsigned int extract_byte(int low, int value);
 int sign_extender(int num, int MSB);
-void viewMEM(int low, int a);
+void viewDMEM();
+bool comp(const pair<int , unsigned char>&a,const pair<int , unsigned char>&b);
 
 unsigned int BranchTarget_Addr;
 unsigned int instruction_type;
@@ -152,6 +153,7 @@ void reset_proc() {
 	for(int i=0; i<32; i++){
 		X[i]=0;
 	}
+	X[2] = 0x7FFFFFDC;
 	for(int i=0; i<4000; i++){
 		MEM[i] = 0;
 	}
@@ -179,7 +181,6 @@ void load_program_memory(char *file_name) {
   while(fscanf(fp, "%x %x", &address, &instruction) != EOF) {
     write_word(&MEM[0], address, instruction);
   }
-  viewMEM(0,8);
   fclose(fp);
 }
 
@@ -202,6 +203,7 @@ void write_data_memory() {
 //should be called when instruction is swi_exit
 void swi_exit() {
 //  write_data_memory();
+	viewDMEM();
   exit(0);
 }
 
@@ -247,8 +249,8 @@ void decode() {
 	Imm_U = immU;
 
 	int immJ = extract_bits(31,31) << 20;
-	immJ += (extract_bits(12,19) << 13);
-	immJ += (extract_bits(20,20) << 12);	
+	immJ += (extract_bits(12,19) << 12);
+	immJ += (extract_bits(20,20) << 11);	
 	immJ += (extract_bits(21,30) << 1);
 	immJ = sign_extender(immJ, 20);
 	Imm_J = immJ;
@@ -284,7 +286,8 @@ void decode() {
 			controls.MemOp = NoMEMOp;
 			controls.RFWrite = Write;
 			controls.IsBranch = Branch_From_ALU;
-			controls.BranchTarget = Branch_ImmJ;\
+			controls.BranchTarget = Branch_ImmJ;
+			operand1 = X[rs1];
 			break;
 		}
 	
@@ -295,7 +298,7 @@ void decode() {
 			controls.ResultSelect = From_MEM;
 			controls.RFWrite = Write;
 			controls.IsBranch = NoBranch;
-
+			operand1 = X[rs1];
 			func3 = extract_bits(12,14);	
 			switch(func3){
 				case(0):{
@@ -379,6 +382,7 @@ void decode() {
 			controls.BranchTarget= Branch_ImmJ;
 			controls.IsBranch= Branched;
 			controls.MemOp=NoMEMOp;
+			controls.BranchType=-1;
 			break;
 		}
 	
@@ -503,13 +507,14 @@ void execute(){
 				break;
 			}
 			case(BGE):{
-				if(ALUresult & (1<<31)){
+				if((ALUresult & (1<<31))||(operand1<operand2)){
 					controls.IsBranch = NoBranch;		
 				}
 				break;
 			}
 			case(BLT):{
-				if(!(ALUresult & (1<<31))){
+				if((!(ALUresult & (1<<31)))||(operand1>=operand2)){
+
 					controls.IsBranch = NoBranch;
 				}
 				break;
@@ -528,14 +533,14 @@ void mem() {
 		switch(controls.MemOp){
 			case(MEM_lb):{
 				Loaded_Data = DMEM[ALUresult];
-				printf(" loaded : %x",Loaded_Data);
+				printf("    loaded :  %x",Loaded_Data);
 				break;
 			}
 			case(MEM_lh):{
 				Loaded_Data = DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
-				printf(" loaded : %x",Loaded_Data);
+				printf("    loaded :  %x",Loaded_Data);
 				break;
 			}
 			case(MEM_lw):{
@@ -546,7 +551,7 @@ void mem() {
 				Loaded_Data = Loaded_Data + DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
-				printf(" loaded : %x",Loaded_Data);
+				printf("    loaded :  %x",Loaded_Data);
 				break;
 			}		
 			case(MEM_sw):{
@@ -662,9 +667,22 @@ int sign_extender(int num, int MSB){
 	return num;
 }
 
-void viewMEM(int low, int a){
-	for(int* p = (int*)&MEM[low], q=a; q>0; p++, q-=4){
-		printf("%08x\n", *p);
+bool comp(const pair<int , unsigned char>&a,const pair<int , unsigned char>&b){
+	return a.first > b.first;
+}
+
+void viewDMEM(){
+
+	vector<pair< int , unsigned char> > vec;
+
+	for(auto& it : DMEM){
+		vec.push_back(it);
+	}
+	sort(vec.begin(),vec.end(),comp);
+	cout <<endl<< "---DATA MEMORY---"<<endl;
+	for(auto& m : vec){
+		
+		printf(" 0x%x : %x \n",m.first,m.second);
 	}
 }
 	
