@@ -134,7 +134,7 @@ int Imm_J;
 
 void run_riscvsim() {
   while(1) {
-  	cout << "\nNew cycle\n---------\n";
+  	cout << "\n\n---------New cycle\n---------\n";
     fetch();
     decode();
     execute();
@@ -565,11 +565,10 @@ void write_back() {
 				case(From_PC):{
 					X[regdestiny] = PC + 4; 
 				}
+				case(From_AUIPC):{
+					X[regdestiny] = PC + Imm_U;
+				}
 			}
-			case(From_AUIPC):{
-				x[regdestiny] = PC + Imm_U;
-			}
-
 		}
 	}
 	
@@ -588,6 +587,7 @@ void write_back() {
 			break;
 		}
 	}
+	cout << "----Exiciting write_back\n";
 }
 
 
