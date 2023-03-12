@@ -199,7 +199,6 @@ void write_data_memory() {
 //should be called when instruction is swi_exit
 void swi_exit() {
 //  write_data_memory();
-	cout << X[1]<<endl;
   exit(0);
 }
 
@@ -336,12 +335,15 @@ void decode() {
 			switch(func3){
 				case(0):{
 					controls.MemOp = MEM_sb;
+					break;
 				}
 				case(1):{
 					controls.MemOp = MEM_sh;
+					break;
 				}
 				case(2):{
 					controls.MemOp = MEM_sw;
+					break;
 				}
 			}
 
@@ -536,10 +538,12 @@ void mem() {
 				MEM[ALUresult] = *tmp;
 				tmp++;
 				MEM[ALUresult+1] = *tmp;
+				break;
 			}
 			case(MEM_sb):{
 				char*tmp = (char*)&SwOp2;
 				MEM[ALUresult] = *tmp;
+				break;
 			}
 		}
 	}
@@ -554,19 +558,24 @@ void write_back() {
 		if(controls.RFWrite){
 			switch(controls.ResultSelect){
 				case(From_ALU):{
-					X[regdestiny] = ALUresult; 
+					X[regdestiny] = ALUresult;
+					break;
 				}
 				case(From_ImmU):{
 					X[regdestiny] = Imm_U; 
+					break;
 				}
 				case(From_MEM):{
 					X[regdestiny] = Loaded_Data; 
+					break;
 				}
 				case(From_PC):{
 					X[regdestiny] = PC + 4; 
+					break;
 				}
 				case(From_AUIPC):{
 					X[regdestiny] = PC + Imm_U;
+					break;
 				}
 			}
 		}
@@ -587,6 +596,7 @@ void write_back() {
 			break;
 		}
 	}
+	cout << "X[rd]:" << X[regdestiny] << endl;;
 	cout << "----Exiciting write_back\n";
 }
 
