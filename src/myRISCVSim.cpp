@@ -65,6 +65,7 @@ static unsigned int operand2;
 #define From_ImmU 1
 #define From_MEM 2
 #define From_PC 3
+#define From_AUIPC 4
 
 // For RFWrite
 #define NoWrite 0
@@ -376,7 +377,7 @@ void decode() {
 		// U-type - auipc
 		case(UtypeA):{
 			controls.RFWrite= Write;
-			controls.ResultSelect= From_ImmU;
+			controls.ResultSelect= From_AUIPC;
 			controls.ALUOp=0;
 			controls.IsBranch=NoBranch;
 			controls.MemOp=NoMEMOp;
@@ -565,6 +566,10 @@ void write_back() {
 					X[regdestiny] = PC + 4; 
 				}
 			}
+			case(From_AUIPC):{
+				x[regdestiny] = PC + Imm_U;
+			}
+
 		}
 	}
 	
