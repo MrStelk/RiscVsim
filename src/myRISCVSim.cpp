@@ -361,6 +361,7 @@ void decode() {
 			controls.RFWrite= NoWrite;
 			controls.IsBranch= Branched;
 			controls.BranchTarget= Branch_ImmB;
+			controls.BranchType=func3;
         		controls.MemOp=NoMEMOp;
 			break;
 		}
@@ -590,7 +591,7 @@ void write_back() {
 			break;
 		}
 		case(Branched):{
-			PC = PC + BranchTarget_Addr;
+			PC =  BranchTarget_Addr;
 			break;
 		}
 		case(Branch_From_ALU):{
