@@ -18,6 +18,7 @@ Date:
 #include "myRISCVSim.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <map>
 #include <math.h>
 
 using namespace std;
@@ -27,6 +28,7 @@ static int X[32];
 //flags
 //memory
 static unsigned char MEM[4000000];
+map<int , unsigned char > DMEM;
 
 //intermediate datapath and control path signals
 static unsigned int instruction_register;
@@ -117,6 +119,7 @@ struct{
 
 
 unsigned int extract_bits(int low, int high);
+unsigned int extract_byte(int low, int value);
 int sign_extender(int num, int MSB);
 void viewMEM(int low, int a);
 
@@ -288,7 +291,7 @@ void decode() {
 		// I-type - load
 		case(ItypeL):{
 			controls.ALUOp = 0;
-			controls.Op2Select = Op2_RF;	
+			controls.Op2Select = Op2_Imm;	
 			controls.ResultSelect = From_MEM;
 			controls.RFWrite = Write;
 			controls.IsBranch = NoBranch;
@@ -297,12 +300,15 @@ void decode() {
 			switch(func3){
 				case(0):{
 					controls.MemOp = MEM_lb;
+					break;
 				}
 				case(1):{
 					controls.MemOp = MEM_lh;
+					break;
 				}
 				case(2):{
 					controls.MemOp = MEM_lw;
+					break;
 				}
 			}
 			break;
@@ -518,35 +524,52 @@ void mem() {
 	cout << "\n\nMemory:\n";
 	cout << "		MemOp: " << controls.MemOp << endl;
 	if(controls.MemOp != NoMEMOp){
-		Loaded_Data = *((int*)&MEM[ALUresult]);
+		
 		switch(controls.MemOp){
-			case(MEM_lh):{
-				Loaded_Data = Loaded_Data << 16;
+			case(MEM_lb):{
+				Loaded_Data = DMEM[ALUresult];
+				printf(" loaded : %x",Loaded_Data);
 				break;
 			}
-			case(MEM_lb):{
-				Loaded_Data = Loaded_Data << 24;
+			case(MEM_lh):{
+				Loaded_Data = DMEM[ALUresult+1];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult];
+				printf(" loaded : %x",Loaded_Data);
+				break;
+			}
+			case(MEM_lw):{
+				Loaded_Data = DMEM[ALUresult+3];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult+2];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult+1];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult];
+				printf(" loaded : %x",Loaded_Data);
 				break;
 			}		
 			case(MEM_sw):{
-				int* tmp = (int*)&MEM[ALUresult];
-				*tmp = SwOp2;
+				DMEM[ALUresult] = extract_byte(0,SwOp2);
+				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
+				DMEM[ALUresult+2] = extract_byte(16,SwOp2);
+				DMEM[ALUresult+3] = extract_byte(24,SwOp2);
+				cout << "    stored :   " ;
+				printf( "  %x %x %x %x  ",DMEM[ALUresult+3],DMEM[ALUresult+2],DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
 			case(MEM_sh):{
-				char* tmp = (char*)&SwOp2;
-				MEM[ALUresult] = *tmp;
-				tmp++;
-				MEM[ALUresult+1] = *tmp;
-				int*tm = (int*)&MEM[ALUresult];
-				cout << "		Stored: " << *tm << endl;
+				DMEM[ALUresult] = extract_byte(0,SwOp2);
+				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
+				cout << "		Stored : " ;
+				printf( " %x %x ",DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
 			case(MEM_sb):{
-				char*tmp = (char*)&SwOp2;
-				MEM[ALUresult] = *tmp;
-				int*tm = (int*)&MEM[ALUresult];
-				cout << "		Stored: " << *tm << endl;
+				
+				DMEM[ALUresult] = extract_byte(0,SwOp2);
+				cout << "		Stored : " ;
+				printf( "  %x  ",DMEM[ALUresult]);
 				break;
 			}
 		}
@@ -621,6 +644,13 @@ unsigned int extract_bits(int low, int high){
 	unsigned int foo = instruction_register;
 	foo = foo << (31 - high);
 	foo = foo >> (31+low-high);
+	return foo;
+}
+
+unsigned int extract_byte(int low, int value){
+	unsigned int foo = value;
+	foo = foo << (31 - (low + 7));
+	foo = foo >> (31 - 7);
 	return foo;
 }
 
