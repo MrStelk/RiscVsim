@@ -364,11 +364,7 @@ void decode() {
 		// U-type - auipc
 		case(UtypeA):{
 			controls.RFWrite= Write;
-<<<<<<< HEAD
 			controls.ResultSelect= From_AUIPC;
-=======
-			controls.ResultSelect= From_ImmU;
->>>>>>> 41fff5e10e1aefaeb597c76e99024e1b5a3d5ac2
 			controls.ALUOp=0;
 			controls.IsBranch=NoBranch;
 		}
