@@ -533,12 +533,10 @@ void write_back() {
 			case(From_PC):{
 				X[regdestiny] = PC + 4; 
 			}
-<<<<<<< HEAD
 			case(From_AUIPC):{
 				x[regdestiny] = PC + Imm_U;
 			}
-=======
->>>>>>> 41fff5e10e1aefaeb597c76e99024e1b5a3d5ac2
+
 		}
 	}
 	
