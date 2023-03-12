@@ -23,15 +23,15 @@ Date:
 using namespace std;
 
 //Register file
-static unsigned int X[32];
+static int X[32];
 //flags
 //memory
 static unsigned char MEM[4000];
 
 //intermediate datapath and control path signals
 static unsigned int instruction_register;
-static unsigned int operand1;
-static unsigned int operand2;
+static int operand1;
+static int operand2;
 
 
 
@@ -264,7 +264,7 @@ void decode() {
 			controls.ALUOp = func3;
 	
 			unsigned int func7 = extract_bits(25,31);
-			if(!(func7 & 1<<5)){
+			if(func7==32){
 				controls.ALUOp += func7;	
 			}
 			
