@@ -36,9 +36,6 @@ static int operand1;
 static int operand2;
 
 
-
-
-
 // For Opcode.
 #define Rtype 51
 #define ItypeA 19
@@ -131,6 +128,7 @@ static unsigned int regdestiny;
 static unsigned int SwOp2;
 int ALUresult;
 int Loaded_Data;
+int cycle_no = 0;
 int Imm_U;
 int Imm_B;
 int Imm_J;
@@ -533,14 +531,14 @@ void mem() {
 		switch(controls.MemOp){
 			case(MEM_lb):{
 				Loaded_Data = DMEM[ALUresult];
-				printf("    loaded :  %x",Loaded_Data);
+				printf("		loaded :  %x",Loaded_Data);
 				break;
 			}
 			case(MEM_lh):{
 				Loaded_Data = DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
-				printf("    loaded :  %x",Loaded_Data);
+				printf("		loaded :  %x",Loaded_Data);
 				break;
 			}
 			case(MEM_lw):{
@@ -551,7 +549,7 @@ void mem() {
 				Loaded_Data = Loaded_Data + DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
-				printf("    loaded :  %x",Loaded_Data);
+				printf("		loaded :  %x",Loaded_Data);
 				break;
 			}		
 			case(MEM_sw):{
@@ -559,7 +557,7 @@ void mem() {
 				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
 				DMEM[ALUresult+2] = extract_byte(16,SwOp2);
 				DMEM[ALUresult+3] = extract_byte(24,SwOp2);
-				cout << "    stored :   " ;
+				cout << "		stored :   " ;
 				printf( "  %x %x %x %x  ",DMEM[ALUresult+3],DMEM[ALUresult+2],DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
@@ -584,7 +582,8 @@ void mem() {
 //writes the results back to register file
 void write_back() {
 	cout << "\n\nWrite_back:\n";
-	cout <<"		rd:" << regdestiny<<endl;
+	cout << "		RFWrite :" << controls.RFWrite<<endl;
+	
 	if(regdestiny){
 		if(controls.RFWrite){
 			switch(controls.ResultSelect){
@@ -609,6 +608,9 @@ void write_back() {
 					break;
 				}
 			}
+
+			cout <<"		rd:" << regdestiny<<endl;
+			cout << "		X[rd]:" << X[regdestiny] << endl;
 		}
 	}
 	
@@ -627,7 +629,7 @@ void write_back() {
 			break;
 		}
 	}
-	cout << "		X[rd]:" << X[regdestiny] << endl;;
+	
 }
 
 
