@@ -27,7 +27,7 @@ using namespace std;
 
 //Register file
 static int X[32];
-//flags
+
 //memory
 static unsigned char MEM[4000000];
 map<int,unsigned char > DMEM;
@@ -116,12 +116,22 @@ struct{
 	unsigned int BranchType;
 }controls;
 
-
+//extracts selected bits from instruction register (machine code)
 unsigned int extract_bits(int low, int high);
+
+//extracts selected byte(i.e 0-7/8-15/16-23/24-31) from a value
 unsigned int extract_byte(int low, int value);
+
+//extends the sign of a extracted bits
 int sign_extender(int num, int MSB);
+
+//prints MEMORY in OUTPUT file
 void viewDMEM();
+
+//prints all decoded instructions i instructions file
 void print_inst(int opcode,int fun3,int rd,int rs1,int rs2,int imms,int imm,FILE* t);
+
+//compares address and data pair 
 bool comp(const pair<int , unsigned char>&a,const pair<int , unsigned char>&b);
 
 unsigned int BranchTarget_Addr;
@@ -136,8 +146,9 @@ int Imm_U;
 int Imm_B;
 int Imm_J;
 
-FILE *out = fopen(".\\OUTPUT.txt","w");
+FILE *out = fopen(".\\OUTPUT.txt","w");			
 FILE *inst= fopen(".\\instructions.txt","w");
+
 void run_riscvsim() {
   while(1) {
   	cout << "\n\n---------New cycle---------\n";
@@ -150,7 +161,7 @@ void run_riscvsim() {
 }
 
 // it is used to set the reset values
-//reset all registers and memory content to 0
+//reset all registers and instruction memory content to 0
 void reset_proc() {
 	for(int i=0; i<32; i++){
 		X[i]=0;
@@ -159,7 +170,7 @@ void reset_proc() {
 	for(int i=0; i<4000; i++){
 		MEM[i] = 0;
 	}
-
+	DMEM.clear();
 	controls.ALUOp = -1;
 	controls.IsBranch = -1;
 	controls.MemOp = -1;
@@ -186,7 +197,7 @@ void load_program_memory(char *file_name) {
   fclose(fp);
 }
 
-//writes the data memory in "data_out.mem" file
+//writes the data memory in "data_out.mc" file
 void write_data_memory() {
 	FILE *fp;
 	unsigned int i;
@@ -201,14 +212,13 @@ void write_data_memory() {
 	for(int j = 0;j<32;j++){
 		fprintf(fp,"X%d  :  0x%08X \n",j,X[j]);
 	}
-	vector<pair< int , unsigned char> > vec;
 
+//sorting the memory by addresses
+	vector<pair< int , unsigned char> > vec;
 	for(auto& it : DMEM){
 	vec.push_back(it);
 	}
-
 	sort(vec.begin(),vec.end(),comp);
-
 	if(DMEM.size()){
 		fprintf(fp,"\n--- MEMORY ---\n");
 		fprintf(fp," ADDRESS     +3 +2 +1 +0");
@@ -225,7 +235,6 @@ void write_data_memory() {
 
 //should be called when instruction is swi_exit
 void swi_exit() {
-//  write_data_memory();
 	write_data_memory();
 	viewDMEM();
 	fclose(out);
@@ -565,11 +574,13 @@ void mem() {
 	if(controls.MemOp != NoMEMOp){
 		
 		switch(controls.MemOp){
+			//loads byte
 			case(MEM_lb):{
 				Loaded_Data = DMEM[ALUresult];
 				printf("		loaded :  %02x",Loaded_Data);
 				break;
 			}
+			//loads half word
 			case(MEM_lh):{
 				Loaded_Data = DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
@@ -577,6 +588,7 @@ void mem() {
 				printf("		loaded :  %02x",Loaded_Data);
 				break;
 			}
+			//loads word
 			case(MEM_lw):{
 				Loaded_Data = DMEM[ALUresult+3];
 				Loaded_Data = Loaded_Data << 8;
@@ -587,7 +599,8 @@ void mem() {
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
 				printf("		loaded :  %02x",Loaded_Data);
 				break;
-			}		
+			}	
+			//stores word	
 			case(MEM_sw):{
 				DMEM[ALUresult] = extract_byte(0,SwOp2);
 				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
@@ -597,6 +610,7 @@ void mem() {
 				printf( "  %02x %02x %02x %02x  ",DMEM[ALUresult+3],DMEM[ALUresult+2],DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
+			//stores half word
 			case(MEM_sh):{
 				DMEM[ALUresult] = extract_byte(0,SwOp2);
 				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
@@ -604,6 +618,7 @@ void mem() {
 				printf( " %02x %02x ",DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
+			//stores byte
 			case(MEM_sb):{
 				
 				DMEM[ALUresult] = extract_byte(0,SwOp2);
