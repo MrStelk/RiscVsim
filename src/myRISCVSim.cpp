@@ -235,7 +235,7 @@ void fetch() {
 	cout << "		instruction_register : ";
 	printf("%x\n", instruction_register);
 	cout << "		PC:" << PC<<endl;
-	fprintf(out,"\n0x%08X     :      ",instruction_register);
+	fprintf(out,"\n0x%08X:",instruction_register);
 	
 	fprintf(inst,"0x%X:0x%08X:",PC,instruction_register);
 }
@@ -430,7 +430,7 @@ void decode() {
 		
 		// EXIT
 		case(EXIT):{
-			fprintf(out," EXIT \n");
+			fprintf(out,"EXIT \n");
 			fprintf(inst,"EXIT ");
 			swi_exit();	
 		}
@@ -641,7 +641,7 @@ void write_back() {
 
 			cout <<"		rd: X" << regdestiny<<endl;
 			cout << "		X[rd]:" << X[regdestiny] << endl;
-			fprintf(out,"	X%d  :  %d\n",regdestiny,X[regdestiny]);
+			fprintf(out,"X%d:0x%08X\n",regdestiny,X[regdestiny]);
 		}
 		else
 		cout << "		rd: X0"<<endl;
@@ -722,7 +722,7 @@ void viewDMEM(){
 	fprintf(out,"--- MEMORY ---\n");
 	for(auto& m : vec){
 		if(!(m.first%4))
-		fprintf(out, " 0x%08x : %02X %02X %02X %02X \n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
+		fprintf(out, "0x%08x:%02X %02X %02X %02X\n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
 	}
 }
 
