@@ -14,7 +14,7 @@ Date:
 /* myRISCVSim.cpp
    Purpose of this file: implementation file for myRISCVSim
 */
-#include <bits/stdc++.h>
+
 #include "myRISCVSim.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -134,8 +134,8 @@ int Imm_U;
 int Imm_B;
 int Imm_J;
 
-FILE *out = fopen(".\\OUTPUT.txt","w");
-FILE *inst= fopen(".\\instructions.txt","w");
+FILE *out = fopen("./OUTPUT.txt","w");
+FILE *inst= fopen("./instructions.txt","w");
 void run_riscvsim() {
   while(1) {
   	cout << "\n\n---------New cycle---------\n";
