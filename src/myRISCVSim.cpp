@@ -14,12 +14,14 @@ Date:
 /* myRISCVSim.cpp
    Purpose of this file: implementation file for myRISCVSim
 */
-#include <bits/stdc++.h>
+#include <iostream>
 #include "myRISCVSim.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <map>
 #include <math.h>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -186,28 +188,31 @@ void load_program_memory(char *file_name) {
 
 //writes the data memory in "data_out.mem" file
 void write_data_memory() {
-  FILE *fp;
-  unsigned int i;
-  fp = fopen("data_out.mc", "w");
-  if(fp == NULL) {
-    printf("Error opening dataout.mem file for writing\n");
-    return;
-  }
-  
-	fprintf(fp,"\n--- REGISTER FILE ---\n");
-  for(int j = 0;j<32;j++)
-  {
-	fprintf(fp,"X%d  :  0x%08X \n",j,X[j]);
-  }
-  vector<pair< int , unsigned char> > vec;
+	FILE *fp;
+	unsigned int i;
+	fp = fopen("data_out.mc", "w");
+	if(fp == NULL) {
+	printf("Error opening dataout.mem file for writing\n");
+	return;
+	}
+
+	fprintf(fp,"--- REGISTER FILE ---\n\n");
+
+	for(int j = 0;j<32;j++){
+		fprintf(fp,"X%d  :  0x%08X \n",j,X[j]);
+	}
+	vector<pair< int , unsigned char> > vec;
 
 	for(auto& it : DMEM){
-		vec.push_back(it);
+	vec.push_back(it);
 	}
+
 	sort(vec.begin(),vec.end(),comp);
 
-	if(DMEM.size())
-	fprintf(fp,"\n--- MEMORY ---\n");
+	if(DMEM.size()){
+		fprintf(fp,"\n--- MEMORY ---\n");
+		fprintf(fp," ADDRESS     +3 +2 +1 +0");
+	}
 	else
 	fprintf(fp,"\n---NO MEMORY USED ---\n");
 
@@ -224,6 +229,7 @@ void swi_exit() {
 	write_data_memory();
 	viewDMEM();
 	fclose(out);
+	fclose(inst);
   exit(0);
 }
 
@@ -235,7 +241,7 @@ void fetch() {
 	cout << "		instruction_register : ";
 	printf("%x\n", instruction_register);
 	cout << "		PC:" << PC<<endl;
-	fprintf(out,"\n0x%08X:",instruction_register);
+	fprintf(out,"0x%08X:",instruction_register);
 	
 	fprintf(inst,"0x%X:0x%08X:",PC,instruction_register);
 }
@@ -720,10 +726,13 @@ void viewDMEM(){
 	sort(vec.begin(),vec.end(),comp);
 	if(DMEM.size())
 	fprintf(out,"--- MEMORY ---\n");
+	else
+	fprintf(out,"-\n");
 	for(auto& m : vec){
 		if(!(m.first%4))
 		fprintf(out, "0x%08x:%02X %02X %02X %02X\n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
 	}
+	fprintf(out,"\n");
 }
 
 void print_inst(int opcode,int func3,int rd,int rs1,int rs2,int imms,int imm,FILE *t)
