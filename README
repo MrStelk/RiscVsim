@@ -1,5 +1,5 @@
 ================================================
-Functional Simulator for subset of ARM Processor
+RISC-V simulator PROJECT PHASE - 1
 ================================================
 
 README
@@ -13,38 +13,34 @@ Table of contents
 
 Directory Structure:
 --------------------
-CS112-Project
+CS204-Project
   |
   |- bin
-      |
-      |- myARMSim
+      |- myRISCSim
   |- doc
-      |
       |- design-doc.docx
   |- include
-      |
-      |- myARMSim.h
+      |- myRISCVSim.h
   |- src
-      |- main.c
+      |- main.cpp
       |- Makefile
-      |- myARMSim.h
+      |- myRISCVSim.cpp
   |- test
-      |- simple_add.mem
-      |- fib.mem
-      |- array_add.mem
-
-How to build
-------------
-For building:
-	$cd src
-	$make
-
-For cleaning the project:
-	$cd src
-	$make clean
-
+      |- elements_sum.mc
+      |- fibonacci.mc
+      |- bubblesort.mc
+      |- input.mc
+  |-simulator
+      |-simulator.py
+  |- GUI
+      |-app.py
+      |-templates
+         |-home.html
+      |-static
+	 |-styles.css
 
 How to execute
 --------------
-./myARMSim test/simple_add.mem
-
+Change your workflow into the simulator directory
+Then, run:
+	python simulator.py

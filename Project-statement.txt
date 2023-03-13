@@ -1,6 +1,6 @@
 Design and implement the function simulator in c or c++ for RISCV-I32
 instructions discussed in class. Function simulator takes instruction encoding
-in MEM file as input. MEM file has the following format:
+in mc file as input. mc file has the following format:
 
 #First number is address of the instruction, followed by space followed by instruction encoding. # can be used for comments. For example:
 
@@ -17,7 +17,7 @@ in MEM file as input. MEM file has the following format:
 #BEQ x7, x7, a
 
 
-All the instruction in the given in the input MEM file is executed as per the
+All the instruction in the given in the input mc file is executed as per the
 functional behavior of the instructions. Each instruction must go through the
 following phases:
  - Fetch
@@ -28,7 +28,7 @@ following phases:
 
 Along with execution of instruction stages, simulator also provide messages
 what it is doing in each stage, Implements an additional instruction which
-exits the simulator, writes the data memory in MEM file before exiting.  
+exits the simulator, writes the data memory in mc file before exiting.  
 
 You must test the software using two assembly programs:
  - Fibonacci Program
