@@ -119,6 +119,7 @@ unsigned int extract_bits(int low, int high);
 unsigned int extract_byte(int low, int value);
 int sign_extender(int num, int MSB);
 void viewDMEM();
+void print_inst(int opcode,int fun3,int rd,int rs1,int rs2,int imms,int imm,FILE* t);
 bool comp(const pair<int , unsigned char>&a,const pair<int , unsigned char>&b);
 
 unsigned int BranchTarget_Addr;
@@ -133,7 +134,8 @@ int Imm_U;
 int Imm_B;
 int Imm_J;
 
-
+FILE *out = fopen(".\\OUTPUT.txt","w");
+FILE *inst= fopen(".\\instructions.txt","w");
 void run_riscvsim() {
   while(1) {
   	cout << "\n\n---------New cycle---------\n";
@@ -186,33 +188,56 @@ void load_program_memory(char *file_name) {
 void write_data_memory() {
   FILE *fp;
   unsigned int i;
-  fp = fopen("data_out.mem", "w");
+  fp = fopen("data_out.mc", "w");
   if(fp == NULL) {
     printf("Error opening dataout.mem file for writing\n");
     return;
   }
   
-  for(i=0; i < 4000; i = i+4){
-    fprintf(fp, "%x %x\n", i, read_word(&MEM[0], i));
+	fprintf(fp,"\n--- REGISTER FILE ---\n");
+  for(int j = 0;j<32;j++)
+  {
+	fprintf(fp,"X%d  :  0x%08X \n",j,X[j]);
   }
+  vector<pair< int , unsigned char> > vec;
+
+	for(auto& it : DMEM){
+		vec.push_back(it);
+	}
+	sort(vec.begin(),vec.end(),comp);
+
+	if(DMEM.size())
+	fprintf(fp,"\n--- MEMORY ---\n");
+	else
+	fprintf(fp,"\n---NO MEMORY USED ---\n");
+
+	for(auto& m : vec){
+		if(!(m.first%4))
+		fprintf(fp, "\n0x%08X : %02X %02X %02X %02X ",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
+	}
   fclose(fp);
 }
 
 //should be called when instruction is swi_exit
 void swi_exit() {
 //  write_data_memory();
+	write_data_memory();
 	viewDMEM();
+	fclose(out);
   exit(0);
 }
 
 
 //reads from the instruction memory and updates the instruction register
 void fetch() {
-	cout << "ssFetch:\n";
+	cout << "Fetch:\n";
 	instruction_register = *((unsigned int*)&MEM[PC]);
 	cout << "		instruction_register : ";
 	printf("%x\n", instruction_register);
 	cout << "		PC:" << PC<<endl;
+	fprintf(out,"\n0x%08X     :      ",instruction_register);
+	
+	fprintf(inst,"0x%X:0x%08X:",PC,instruction_register);
 }
 
 //reads the instruction register, reads operand1, operand2 fromo register file, decides the operation to be performed in execute stage
@@ -405,6 +430,8 @@ void decode() {
 		
 		// EXIT
 		case(EXIT):{
+			fprintf(out," EXIT \n");
+			fprintf(inst,"EXIT ");
 			swi_exit();	
 		}
 	}
@@ -424,6 +451,9 @@ void decode() {
 			break;
 		}
 	}
+    print_inst( opcode, func3, rd, rs1, rs2, immS, imm,out);
+	print_inst( opcode, func3, rd, rs1, rs2, immS, imm,inst);
+	
 	cout << "		operand1:" << operand1<<endl;
 	cout << "		operand2:" << operand2 << endl;
 }
@@ -531,14 +561,14 @@ void mem() {
 		switch(controls.MemOp){
 			case(MEM_lb):{
 				Loaded_Data = DMEM[ALUresult];
-				printf("		loaded :  %x",Loaded_Data);
+				printf("		loaded :  %02x",Loaded_Data);
 				break;
 			}
 			case(MEM_lh):{
 				Loaded_Data = DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
-				printf("		loaded :  %x",Loaded_Data);
+				printf("		loaded :  %02x",Loaded_Data);
 				break;
 			}
 			case(MEM_lw):{
@@ -549,7 +579,7 @@ void mem() {
 				Loaded_Data = Loaded_Data + DMEM[ALUresult+1];
 				Loaded_Data = Loaded_Data << 8;
 				Loaded_Data = Loaded_Data + DMEM[ALUresult];
-				printf("		loaded :  %x",Loaded_Data);
+				printf("		loaded :  %02x",Loaded_Data);
 				break;
 			}		
 			case(MEM_sw):{
@@ -558,21 +588,21 @@ void mem() {
 				DMEM[ALUresult+2] = extract_byte(16,SwOp2);
 				DMEM[ALUresult+3] = extract_byte(24,SwOp2);
 				cout << "		stored :   " ;
-				printf( "  %x %x %x %x  ",DMEM[ALUresult+3],DMEM[ALUresult+2],DMEM[ALUresult+1],DMEM[ALUresult]);
+				printf( "  %02x %02x %02x %02x  ",DMEM[ALUresult+3],DMEM[ALUresult+2],DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
 			case(MEM_sh):{
 				DMEM[ALUresult] = extract_byte(0,SwOp2);
 				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
 				cout << "		Stored : " ;
-				printf( " %x %x ",DMEM[ALUresult+1],DMEM[ALUresult]);
+				printf( " %02x %02x ",DMEM[ALUresult+1],DMEM[ALUresult]);
 				break;
 			}
 			case(MEM_sb):{
 				
 				DMEM[ALUresult] = extract_byte(0,SwOp2);
 				cout << "		Stored : " ;
-				printf( "  %x  ",DMEM[ALUresult]);
+				printf( "  %02x  ",DMEM[ALUresult]);
 				break;
 			}
 		}
@@ -584,8 +614,8 @@ void write_back() {
 	cout << "\n\nWrite_back:\n";
 	cout << "		RFWrite :" << controls.RFWrite<<endl;
 	
-	if(regdestiny){
-		if(controls.RFWrite){
+	if(controls.RFWrite){
+		if(regdestiny){
 			switch(controls.ResultSelect){
 				case(From_ALU):{
 					X[regdestiny] = ALUresult;
@@ -609,11 +639,15 @@ void write_back() {
 				}
 			}
 
-			cout <<"		rd:" << regdestiny<<endl;
+			cout <<"		rd: X" << regdestiny<<endl;
 			cout << "		X[rd]:" << X[regdestiny] << endl;
+			fprintf(out,"	X%d  :  %d\n",regdestiny,X[regdestiny]);
 		}
+		else
+		cout << "		rd: X0"<<endl;
 	}
 	
+	viewDMEM();
 	switch(controls.IsBranch)
 	{
 		case(NoBranch):{
@@ -630,6 +664,9 @@ void write_back() {
 		}
 	}
 	
+	cycle_no++;
+	cout << "CYCLE_COMPLETED: "<<cycle_no<<endl;
+
 }
 
 
@@ -681,10 +718,159 @@ void viewDMEM(){
 		vec.push_back(it);
 	}
 	sort(vec.begin(),vec.end(),comp);
-	cout <<endl<< "---DATA MEMORY---"<<endl;
+	if(DMEM.size())
+	fprintf(out,"--- MEMORY ---\n");
 	for(auto& m : vec){
-		
-		printf(" 0x%x : %x \n",m.first,m.second);
+		if(!(m.first%4))
+		fprintf(out, " 0x%08x : %02X %02X %02X %02X \n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
 	}
 }
+
+void print_inst(int opcode,int func3,int rd,int rs1,int rs2,int imms,int imm,FILE *t)
+{
 	
+	switch(opcode){
+		// I-type - Arithmetic
+		case(ItypeA):
+		// R-type
+		case(Rtype):{
+	
+			switch(controls.ALUOp){
+			case(Add_op):{
+				fprintf(t,"ADD");
+				break;
+			}
+			case(Sub_op):{
+				fprintf(t,"SUB");
+				break;
+			}
+			case(Xor_op):{
+				fprintf(t,"XOR");
+				break;
+			}
+			case(Or_op):{
+				fprintf(t,"OR ");
+				break;
+			}
+			case(And_op):{
+				fprintf(t,"AND");
+				break;
+			}
+			case(Sll_op):{
+				fprintf(t,"SLL");
+				break;
+			}
+			case(Srl_op):{
+				fprintf(t,"SRL");
+				break;
+			}
+			case(Sra_op):{
+				fprintf(t,"SRA");
+				break;
+			}
+			case(Slt_op):{
+				fprintf(t,"SLT");
+				break;
+			}
+			}
+				if(opcode == ItypeA)
+				fprintf(t,"i x%d x%d %d",rd,rs1,imm);
+				else
+				fprintf(t," x%d x%d x%d",rd,rs1,rs2);
+			break;
+		}	
+
+		// I-type - JALR
+		case(ItypeJ):{
+			fprintf(t,"JALR x%d x%d %d",rd,rs1,imm);
+			break;
+		}
+	
+		// I-type - load
+		case(ItypeL):{	
+			switch(func3){
+				case(0):{
+					fprintf(t,"LB");
+					break;
+				}
+				case(1):{
+					fprintf(t,"LH");
+					break;
+				}
+				case(2):{
+					fprintf(t,"LW");
+					break;
+				}
+			}
+			fprintf(t," x%d %d(x%d)",rd,imm,rs1);
+			break;
+		}	
+	
+		
+		
+		// S-type
+		case(Stype):{
+			
+			switch(func3){
+				case(0):{
+					fprintf(t,"SB");
+					break;
+				}
+				case(1):{
+					fprintf(t,"SH");
+					break;
+				}
+				case(2):{
+					fprintf(t,"SW");
+					break;
+				}
+			}
+			fprintf(t," x%d %d(x%d)",rs2,imms,rs1);
+			break;
+		}
+	
+		// B-type
+		case(Btype):{
+			switch(controls.BranchType){
+			case(BEQ):{
+				fprintf(t,"BEQ");
+				break;
+			}
+			case(BNE):{
+				fprintf(t,"BNE");
+				break;
+			}
+			case(BGE):{
+				fprintf(t,"BGE");
+				break;
+			}
+			case(BLT):{
+				fprintf(t,"BLT");
+				break;
+			}
+			}
+			fprintf(t," x%d x%d %d",rs1,rs2,Imm_B);
+			break;
+		}
+		
+		// J-type
+		case(Jtype):{
+			fprintf(t,"JAL x%d %d",rd,Imm_J);
+			break;
+		}
+	
+		// U-type - auipc
+		case(UtypeA):{
+			fprintf(t,"AUIPC x%d 0x%x",rd ,Imm_U>>12);
+			break;
+		}
+
+		// U-type - lui
+		case(UtypeL):{
+			fprintf(t,"LUI x%d 0x%x",rd,Imm_U>>12);
+			break;
+		}
+		
+	}
+	fprintf(t,"\n");
+}	
