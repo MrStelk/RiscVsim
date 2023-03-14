@@ -199,7 +199,7 @@ void load_program_memory(char *file_name) {
 void write_data_memory() {
 	FILE *fp;
 	unsigned int i;
-	fp = fopen("data_out.mc", "w");
+	fp = fopen("../output/data_out.mc", "w");
 	if(fp == NULL) {
 	printf("Error opening dataout.mem file for writing\n");
 	return;
@@ -241,6 +241,7 @@ void swi_exit() {
 }
 
 
+int inc;
 //reads from the instruction memory and updates the instruction register
 void fetch() {
 	cout << "Fetch:\n";
@@ -249,8 +250,8 @@ void fetch() {
 	printf("%x\n", instruction_register);
 	cout << "		PC:" << PC<<endl;
 	fprintf(out,"0x%08X:",instruction_register);
-	
-	fprintf(inst,"0x%X:0x%08X:",PC,instruction_register);
+	inc++;
+	fprintf(inst,"%d:0x%X:0x%08X:",inc,PC,instruction_register);
 }
 
 //reads the instruction register, reads operand1, operand2 fromo register file, decides the operation to be performed in execute stage
@@ -743,7 +744,7 @@ void viewDMEM(){
 	fprintf(out,"-\n");
 	for(auto& m : vec){
 		if(!(m.first%4))
-		fprintf(out, "0x%08x:%02X %02X %02X %02X\n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
+		fprintf(out, "0x%08X:%02X %02X %02X %02X\n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
 	}
 	fprintf(out,"\n");
 }

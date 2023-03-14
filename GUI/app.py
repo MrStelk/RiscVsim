@@ -27,23 +27,24 @@ instructions = {}
 
 memory={}
 cycles={"0":0, "max":0}
-out = open("../src/OUTPUT.txt", "r")
+inst_no=0
+
+def runSim():
+	os.system("cd ../src && make")
+	os.system("../bin/myRISCVSim ../test/input.mc")
 
 @app.route("/")
 def home():
-	os.system("../src/make")
-	os.system("../bin/myRISCVSim ../test/input.mc")
-	
 	instructions.clear()
 	memory.clear()
 	RF = RFinit
 	cycles["0"] = 0
 	cycles["max"] = 0
-
-	with open("../src/instructions.txt", "r") as f:
+	
+	with open("./instructions.txt", "r") as f:
 		for line in f:
 			foo = line.split(":")
-			instructions[foo[1]] = [foo[0],foo[2]]
+			instructions[foo[0]] = [foo[1],foo[2],foo[3]]
 			cycles["max"] += 1
 	return render_template('home.html', 
 				regfile=RF, 
@@ -62,8 +63,8 @@ def program():
 			cycles["0"] += 1
 		
 			inst = out.readline()
-			inst = inst.split(":")
-			instructions.pop(inst[0])
+			lil = list(instructions.items())
+			instructions.pop(lil[0][0])
 	
 			new = out.readline()
 			while(new[0] == "X"):
@@ -72,11 +73,13 @@ def program():
 				new = out.readline()
 	
 			new = out.readline()
-			while(new[0] != "\n"):
-				new=new.split(":")
-				data = new[1].split(" ")
-				memory[new[0]] = [data[0], data[1], data[2], data[3]]
-				new=out.readline()
+			if new[0] != '\n':
+				memory.clear()
+				while(new[0] != "\n"):
+					new=new.split(":")
+					data = new[1].split(" ")
+					memory[new[0]] = [data[0], data[1], data[2], data[3]]
+					new=out.readline()
 			loop-=1	
 		next = cycles["0"]
 	else:
@@ -90,4 +93,8 @@ def program():
 				instructions=instructions,
 				memory=memory,
 				cycount=next)
-		
+
+if __name__ == "__main__":
+	runSim()
+	out = open("./OUTPUT.txt", "r")
+	app.run()
