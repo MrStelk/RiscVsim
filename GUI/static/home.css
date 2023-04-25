@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css?family=Tilt+Neon&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Tilt+Prism&display=swap');
+
+@property --rotate {
+  syntax: "<angle>";
+  initial-value: 132deg;
+  inherits: false;
+}
+
+bodysection{
+    margin-top:12%;
+    margin-left: 27%;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    height: 47%;
+    align-items: center;
+    justify-content:flex-start;
+    border:2px solid white;
+    border-radius: 10%;
+    flex-shrink: 3;
+    box-shadow: 0 0 10px 5px #dbb970;
+}
+body {
+    background: linear-gradient(-45deg, #ee7752, #0c7fa8);
+    background-size: 400% 400%;
+    animation: gradient 10s ease infinite;
+    display: flex;
+}
+div.heading{
+  font-family: 'Tilt Neon', sans-serif;
+  color:white;
+  text-align: center;
+  border-bottom: 2px solid white;
+}
+.toggle {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.toggle-switch {
+  display: inline-block;
+  background: #ccc;
+  border-radius: 16px;
+  width: 58px;
+  height: 32px;
+  position: relative;
+  vertical-align: middle;
+  transition: background 0.25s;
+}
+.toggle-switch:before, .toggle-switch:after {
+  content: "";
+}
+.toggle-switch:before {
+  display: block;
+  background: linear-gradient(to bottom, #fff 0%, #eee 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  transition: left 0.25s;
+}
+.toggle:hover .toggle-switch:before {
+  background: linear-gradient(to bottom, #fff 0%, #fff 100%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.toggle-checkbox:checked + .toggle-switch {
+  background: #dbb970;
+}
+.toggle-checkbox:checked + .toggle-switch:before {
+  left: 30px;
+}
+
+.toggle-checkbox {
+  position: absolute;
+  visibility: hidden;
+}
+
+.toggle-label {
+  margin-left: 5px;
+  position: relative;
+  top: 2px;
+  font-family: 'Tilt Neon', sans-serif;
+  color:white;
+}
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+
+input.button {
+  --border: 0.2rem;    /* the border width */
+  --slant: 0.7em;   /* control the slanted corners */
+  --color: #dbb970; /* the color */
+  
+  font-size: 1.4rem;
+  padding-left:2rem;
+  padding-right:2rem;
+  font-family: 'Tilt Neon', sans-serif;
+
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--color);
+  background:
+     linear-gradient(to bottom left,var(--color)  50%,#0000 50.1%) top right,
+     linear-gradient(to top   right,var(--color)  50%,#0000 50.1%) bottom left;
+  background-size: calc(var(--slant) + 1.3*var(--border)) calc(var(--slant) + 1.3*var(--border));
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 0 200px inset var(--s,#0000),
+    0 0 0 var(--border) inset var(--color);
+  clip-path:
+      polygon(0 0, calc(100% - var(--slant)) 0, 100% var(--slant),
+              100% 100%, var(--slant) 100%,0 calc(100% - var(--slant))
+             );
+  transition: color var(--t,0.3s), background-size 0.3s;
+}
+input.button:focus-visible {
+  outline-offset: calc(-1*var(--border));
+  outline: var(--border) solid #000c;
+  clip-path: none;
+  background-size: 0 0;
+}
+input.button:hover,
+input.button:active{
+  background-size: 100% 100%;
+  color: #fff;
+  --t: 0.2s 0.1s;
+}
+input.button:active {
+  --s: #0005;
+  transition: none;
+}

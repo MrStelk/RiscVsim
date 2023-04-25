@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quintessential&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="../static/single.css"></link>
+
+</head>
+<body>
+    <div>
+        <bodysection>
+            <div style="width:25vw;">
+                <section2>
+                  <h1>Instructions</h1>
+                  <div class="tb2-header">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <thead>
+                        <tr>
+                          <th>Instruction Address</th>
+                          <th>Machine Code</th>
+                          <th>Instruction</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                  <div class="tb2-content", id="tb2-bar">
+                    <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                      <tbody>
+                          {% for inst, value in instructions.items() %}
+                          <tr class="rowbodies">
+                            <td>{{ value[2] }}</td>
+                            <td>{{ value[1] }}</td>
+                            <td>{{ value[0] }}</td>
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </section2>
+            </div>
+            <div class="mainbody">
+                <div>
+                    <section3>
+                      <h1>Memory</h1>
+                      <div class="tb3-header">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <thead>
+                            <tr class="t3-header-text">
+                              <th style="border-right:1px solid black;">Address</th>
+                              <th>+3</th>
+                              <th>+2</th>
+                              <th>+1</th>
+                              <th>+0</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+                      <div class="tb3-content", id="tb3-bar">
+                        <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                          <tbody>
+                              {% for address, mem in memory.items() %}
+                              <tr class="rowbodies">
+                                <td>{{ address }}</td>
+                                <td>{{ mem[0] }}</td>
+                                <td>{{ mem[1] }}</td>
+                                <td>{{ mem[2] }}</td>
+                                <td>{{ mem[3] }}</td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    </section3>
+                </div>
+                <div style="padding-top:10px;">
+                    <bottomsec>
+                        <div style="border-right:5px solid rgba(124,122,122,0.1);">
+                            <a href="http://127.0.0.1:5000/single/program">
+                            <button type="submit" style="--color:#000000;--border:2px;--slant:.5em">Step</button>
+                            </a>
+                        </div>
+                        <div style="border-left:5px solid rgba(124,122,122,0.1);">
+                            <form method="post" action="http://127.0.0.1:5000/single/program">
+                                <input type="hidden" name="done" value="end">
+                                <button type="submit" style="--color:#000000;--border:2px;--slant:.5em">Run</button>
+                            </form>
+                        </div>
+                        <div style="border-left:10px solid rgba(124,122,122,0.1);">
+                          <form method="get" action="http://127.0.0.1:5000/">
+                                  <input type="hidden" name="done" value="end">
+                                  <button type="submit" style="--color:#000000;--border:2px;--slant:.5em" name="home">Home</button>
+                          </form>
+                        </div>
+                        <div>
+                            <p class="cycles">Cycles<br>Completed: {{ cycount }}<p>
+                        </div>
+                    </bottomsec>
+                </div>
+            </div>
+            <div class="RF">
+                <section>
+                  <h1>Register File</h1>
+                  <div class="tbl-header">
+                    <table cellpadding="0" cellspacing="0" border="0", >
+                      <thead>
+                        <tr>
+                          <th style="border-right:1px solid black;">Register</th>
+                          <th>Data</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                  <div class="tbl-content", id="tb1-bar">
+                    <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                      <tbody>
+                          {% for register, value in regfile.items() %}
+                            <tr class="rowbodies">
+                                <td style="text-align:right;">{{ register }}</td>
+                                <td style="text-align:right;">{{ value }}</td>
+                            </tr>
+                          {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+            </div>
+        </bodysection>
+    </div>
+</body>
+</html>
+

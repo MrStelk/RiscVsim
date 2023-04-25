@@ -1,0 +1,12 @@
+No.of Cycles = 10
+Instructions executed = 6
+No.of Cycles Per Insruction = 1
+No.of Data Transfers = 0
+No.of ALU Instructions = 6
+No.of Control Instructions = 0
+No.of stalls = 0
+No.of data hazards = 3
+No.of control hazards = 0
+No.of Branch mispredictions = 0
+No.of stalls due to data hazards  = 0
+No.of stalls due to control hazards  = 0

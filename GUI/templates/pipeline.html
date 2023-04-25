@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quintessential&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="../static/pipeline.css"></link>
+    <script >
+        var id_mem;
+        var ran_time=0;
+        var tmp_dic = []
+        function CycleSelect(id){
+            var dic = {{ pipeline|tojson|safe }};
+            var inst = {{ instructions|tojson|safe }};
+            var list = dic[id];
+            var cynum = document.getElementById("instruction_details_cynum");
+            cynum.innerHTML = "Cycle Number : " + id; 
+            var table = document.getElementById("instruction_details_table");
+            table.innerHTML = "";
+            for(var i=list.length-1; i>=0; i--){
+                if(inst[list[i]]){
+                    table.innerHTML += '<tr class="rowbodies"><td class="Instruction_details" style="border-right: solid 2px rgba(0,0,0,0.5);border-bottom: solid 2px rgba(0,0,0,0.5);color:rgba(0,0,0,1.0);">' + list[i] +'</td><td class="Instruction_details">'+ inst[list[i]] +'</td></tr>'    
+                }            
+            }
+            var selected = document.getElementById(id);
+            if(selected){
+                selected.style.setProperty('box-shadow', '0 0 10px 7px #6be2f2');   
+                var childs = selected.children;
+                childs[5].style.removeProperty('border-bottom');
+            }
+            if(id_mem){
+                var remove = document.getElementById(id_mem);
+                remove.style.removeProperty('box-shadow');
+                var rem_child = remove.children;
+                rem_child[5].style.setProperty('border-bottom', 'solid 2px rgba(0,0,0,0.5)');   
+                id_mem = id;
+            }
+            else{
+                id_mem=id;
+                var cycles = Object.keys(dic);  
+                var last_cycle = document.getElementById(cycles[cycles.length-1]);
+                if (last_cycle){
+                    last_cycle.style.removeProperty('box-shadow');     
+                }     
+            }
+        }
+
+        function to2(){
+            var right = document.getElementById("right_section");
+            var left = document.getElementById("pipeline_diagram");
+            var mem = document.getElementById("mem_mainbody");
+            var rf = document.getElementById("RF");
+            right.style.setProperty("display", "none");
+            left.style.setProperty("display", "none");
+            mem.style.setProperty('display','flex');
+            rf.style.setProperty('display', 'flex');
+
+        }
+        function to1(){
+            var right = document.getElementById("right_section");
+            var left = document.getElementById("pipeline_diagram");
+            var mem = document.getElementById("mem_mainbody");
+            var rf = document.getElementById("RF");
+            right.style.setProperty("display", "flex");
+            left.style.setProperty("display", "flex");
+            mem.style.setProperty('display','none');
+            rf.style.setProperty('display', 'none');
+        }
+
+        window.onload = function() {
+            var dic = {{ pipeline|tojson|safe }};
+            var cycles = Object.keys(dic);
+            var last_list = dic[cycles[cycles.length-1]];
+
+            var inst = {{ instructions|tojson|safe }};
+
+            var cynum = document.getElementById("instruction_details_cynum");
+            cynum.innerHTML = "Cycle Number : " + cycles[cycles.length-1]; 
+
+            var table = document.getElementById("instruction_details_table");
+            table.innerHTML = "";
+            if(last_list){
+                for(var i=last_list.length-1; i>=0; i--){
+                    if(last_list[i] != ''){
+                        table.innerHTML += '<tr class="rowbodies"><td class="Instruction_details" style="border-right: solid 2px rgba(0,0,0,0.5);border-bottom: solid 2px rgba(0,0,0,0.5);color:rgba(0,0,0,1.0);">' + last_list[i] +'</td><td class="Instruction_details">'+ inst[last_list[i]] +'</td></tr>'
+                    }
+                }    
+            }
+
+            var last_cycle = document.getElementById(cycles[cycles.length-1]);
+            if (last_cycle){
+                last_cycle.style.setProperty('box-shadow', '0 0 10px 7px #6be2f2');
+            }
+            
+            var chazard = {{ chazards|tojson|safe }};
+            var chs = Object.keys(chazard)
+            
+            for(var i=0; i<chs.length; i++){
+                var tmp = document.getElementById(chs[i]).children;
+                tmp[2].style['box-shadow'] = '0 0 2px 3px #753b7a'
+                tmp[3].style['box-shadow'] = '0 0 2px 3px #753b7a'
+            }
+            var dhazard = {{ dhazards|tojson|safe }};
+            var dhs = Object.keys(dhazard)
+            
+            for(var i=0; i<dhs.length; i++){
+                var tmp = document.getElementById(dhs[i]).children;
+                tmp[2].style['box-shadow'] = '0 0 2px 3px #4c8c48'
+            }
+
+            var pipeline_block = document.getElementById("tb2-bar");
+            pipeline_block.scrollTo(0, pipeline_block.scrollHeight);
+
+            var run_status = {{ ran|tojson|safe }};
+            if(run_status == 1 && ran_time==0){
+                var branch = {{ branched|tojson|safe }};
+                var branch_keys = Object.keys(branch);
+                var branchTable = document.getElementById("branch_table");
+                branchTable.innerHTML = "";
+                if(branch_keys){
+                    var correct=0;
+                    for(var i=0; i<branch_keys.length; i++){
+                        var branch_list = branch[branch_keys[i]];
+                        if(branch_list[1] == "1"){
+                            var prediction = "Taken";
+                        }
+                        else{
+                            var prediction = "Not Taken";
+                        }
+                        if(branch_list[2] == "1"){
+                            var result = "Taken";
+                        }
+                        else{
+                            var result = "Not Taken";
+                        }
+                        if(branch_list[1] == branch_list[2]){
+                            correct +=1;
+                        }
+                        branchTable.innerHTML += '<tr class="rowbodies"><td style="border-right: solid 2px rgba(0,0,0,0.5);border-bottom: solid 2px rgba(0,0,0,0.5);color:rgba(0,0,0,1.0);">'+ branch_keys[i] +'</td><td style="border-right: solid 2px rgba(255,255,255,0.15)">'+ branch_list[0] +'</td><td style="border-right: solid 2px rgba(255,255,255,0.15)">' + prediction +'</td><td>' + result +'</td></tr>';
+                    }
+                    var acc = document.getElementById("accuracy");
+                    var crt = document.getElementById("crt_predictions");
+                    var mispred = document.getElementById("mispredictions");
+                    acc.innerHTML = "Accuracy : " + 100*(correct/branch_keys.length).toFixed(4) + " %";
+                    crt.innerHTML = "Correct Predictions : " + correct;
+                    mispred.innerHTML = "Mispredictions : " + (branch_keys.length-correct);
+                }
+                ran_time=1;
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <div>
+      <bodysection>
+        <div class="mem_mainbody" id="mem_mainbody">
+            <section6>
+                      <h1>Memory</h1>
+                      <div class="tb6-header">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <thead>
+                            <tr class="t3-header-text">
+                              <th style="border-right:1px solid black;">Address</th>
+                              <th>+3</th>
+                              <th>+2</th>
+                              <th>+1</th>
+                              <th>+0</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+                      <div class="tb6-content", id="tb6-bar">
+                        <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                          <tbody>
+                              {% for address, mem in memory.items() %}
+                              <tr class="rowbodies">
+                                <td>{{ address }}</td>
+                                <td>{{ mem[0] }}</td>
+                                <td>{{ mem[1] }}</td>
+                                <td>{{ mem[2] }}</td>
+                                <td>{{ mem[3] }}</td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+            </section6>
+        </div>
+        <div class="pipeline_diagram" id="pipeline_diagram">
+            <div>
+                <section2>
+                <h1>Pipeline Stages</h1>
+                <div class="tb2-header">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <thead>
+                        <tr>
+                          <th>Cycle</th>
+                          <th>Fetch</th>
+                          <th>Decode</th>
+                          <th>Execute</th>
+                          <th>Memory</th>
+                          <th>Write Back</th>
+                        </tr>
+                      </thead>
+                    </table>
+                </div>
+                <div class="tb2-content", id="tb2-bar">
+                    <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                      <tbody>
+                          {% for each, value in pipeline.items() %}
+                            <tr class="rowbodies" onclick="CycleSelect(this.id)" id="{{ each }}">
+                            <td>{{ value[0] }}</td>
+                            <td style="border-right: solid 2px rgba(255,255,255,0.15)">{{ value[1] }}</td>
+                            <td style="border-right: solid 2px rgba(255,255,255,0.15)">{{ value[2] }}</td>
+                            <td style="border-right: solid 2px rgba(255,255,255,0.15)">{{ value[3] }}</td>
+                            <td style="border-right: solid 2px rgba(255,255,255,0.15)">{{ value[4] }}</td>
+                            <td style="border-right: solid 2px rgba(0,0,0,0.5);border-bottom: solid 2px rgba(0,0,0,0.5);color:rgba(0,0,0,1);">{{ each }}</td>
+                            </tr>                      
+                          {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+                </section2>
+            </div>   
+            <div>
+                <bottomsec>
+                        <div style="border-right:5px solid rgba(124,122,122,0.1);">
+                            <a href="http://127.0.0.1:5000/pipeline/program">
+                            <button type="submit" style="--color:#000000;--border:2px;--slant:.5em">Step</button>
+                            </a>
+                        </div>
+                        <div style="border-left:5px solid rgba(124,122,122,0.1);">
+                            <form method="post" action="http://127.0.0.1:5000/pipeline/program">
+                                <input type="hidden" name="done" value="end">
+                                <button type="submit" style="--color:#000000;--border:2px;--slant:.5em">Run</button>
+                            </form>
+                        </div>
+                        <div style="border-left:10px solid rgba(124,122,122,0.1);">
+                          <form method="get" action="http://127.0.0.1:5000/">
+                                  <input type="hidden" name="done" value="end">
+                                  <button type="submit" style="--color:#000000;--border:2px;--slant:.5em" name="home">Home</button>
+                              </form>
+                        </div>
+                        <div>
+                            <p class="cycles">Cycles<br>Completed: {{ cycount }}<p>
+                        </div>
+                </bottomsec>
+            </div>
+        </div>
+        <div class="middle_section">
+            <ul class="menu-bar">
+                <li onclick="to1()">1</li>
+                <li onclick="to2()">2</li>
+            </ul>
+        </div>
+        <div class="right_section" id="right_section">
+            <div style="margin-right: 1vw;">
+                <section3>
+                <h1>Branch Predictor</h1>
+                <div class="tb3-header">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <thead>
+                        <tr>
+                          <th>Cycle No</th>
+                          <th>Instruction No</th>
+                          <th>Prediction</th>
+                          <th>Result</th>
+                        </tr>
+                      </thead>
+                    </table>
+                </div>
+                <div class="tb3-content", id="tb3-bar">
+                    <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                      <tbody id="branch_table">
+                            {% for each, value in branched.items() %}
+                                                 
+                            {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+                </section3>
+            </div>
+            <div style="margin-right: 1vw;">
+                <bottomsec>
+                    <div>
+                        <p class="cycles" style="border-right: solid 2px rgba(0,0,0,0.5);padding-right: 0.5rem;" id="accuracy">Accuracy: 100<p>
+                    </div>
+                    <div>
+                            <p class="cycles" style="border-right: solid 2px rgba(0,0,0,0.5);padding-right: 0.5rem;" id="crt_predictions">Correct Predictions: 100<p>
+                    </div>
+                    <div>
+                        <p class="cycles" id="mispredictions">Mispredictions: 0<p>
+                    </div>
+                </bottomsec>
+            </div>
+            <div style="margin-right: 1vw;">
+                <section4>
+                <h1>Instruction details</h1>
+                <div class="tb4-header">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <thead>
+                        <tr>
+                          <th id="instruction_details_cynum">Cycle Number : {{ cyclecount }}</th>
+                        </tr>
+                      </thead>
+                    </table>
+                </div>
+                <div class="tb4-content", id="tb4-bar">
+                    <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                      <tbody id="instruction_details_table">
+                      </tbody>
+                    </table>
+                </div>
+                </section4>
+            </div>
+        </div>
+        <div class="RF" id="RF">
+                <section7>
+                  <h1>Register File</h1>
+                  <div class="tb7-header">
+                    <table cellpadding="0" cellspacing="0" border="0", >
+                      <thead>
+                        <tr>
+                          <th style="border-right:1px solid black;">Register</th>
+                          <th>Data</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                  <div class="tb7-content", id="tb7-bar">
+                    <table cellpadding="0" cellspacing="0" border="0" class="table_effect">
+                      <tbody>
+                          <!-- {% for register, value in regfile.items() %} -->
+                            <tr class="rowbodies">
+                                <td style="text-align:right;">{{ register }}</td>
+                                <td style="text-align:right;">{{ value }}</td>
+                            </tr>
+                          <!-- {% endfor %} -->
+                      </tbody>
+                    </table>
+                  </div>
+                </section7>
+            </div>
+      </bodysection>
+    </div>
+</body>
+</html>
+

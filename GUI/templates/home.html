@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quintessential&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="../static/home.css"></link>
+
+</head>
+  <body>
+    <bodysection>
+      <form method="post" action="/run">
+        <div class="heading">
+          <h2>Initialize the knobs</h2>
+        </div>
+        <div style="padding: 1rem;">
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox"  name="pipeline">
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Enable to use Pipelining</span>
+          </label>
+        </div>
+        <div style="padding: 1rem;">
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox"  name="dataf">
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Enable to use Data Forwarding</span>
+          </label>
+        </div>
+        <div style="padding: 1rem;">
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox"  name="printrf">
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Enable to print values in the RF at each cycle</span>
+          </label>
+        </div>
+        <div style="padding: 1rem;">
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox"  name="printpr">
+            <div class="toggle-switch"></div>
+            <span class="toggle-label">Enable to print pipeline registers at each cycle along with cycle number</span>
+          </label>
+        </div>
+        <div style="padding: 0rem 1rem 0rem 1erm; text-align: center;">
+          <input type="submit" name="knobs" class="button">
+        </div>
+      </form>
+    </bodysection>
+  </body>
+</html>
+
+
