@@ -1,13 +1,24 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 /* 
 
 The project is developed as part of Computer Architecture class
 Project Name: Functional Simulator for subset of RISCV Processor
 
 Developer's Name: Karthik N Dasaraju, Pavithran Goud, Kola Sai Datta, Rishik Vardhan Vudem 
+<<<<<<< HEAD
 
 
 
    myRISCVSim.cpp
+=======
+*/
+
+
+/* myRISCVSim.cpp
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
    Purpose of this file: implementation file for myRISCVSim
 */
 
@@ -51,7 +62,10 @@ static int operand2;
 #define Op2_RF 0
 #define Op2_Imm 1
 #define Op2_ImmS 2
+<<<<<<< HEAD
 #define Op2_ImmU 3
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 
 
 // For IsBranch.
@@ -94,12 +108,17 @@ static int operand2;
 #define Branch_ImmJ 0
 #define Branch_ImmB 1
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 // For BeanchType.
 #define BEQ 0
 #define BNE 1
 #define BGE 5
 #define BLT 4
 
+<<<<<<< HEAD
 //for hazard
 #define hz_1 1
 #define hz_2 2
@@ -206,6 +225,11 @@ int spec_instruction;
 
 // All control signals.
 typedef struct{
+=======
+
+// All control signals.
+struct{
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 	unsigned int ALUOp;
 	unsigned int IsBranch;
 	unsigned int MemOp;
@@ -213,6 +237,7 @@ typedef struct{
 	unsigned int ResultSelect;
 	unsigned int BranchTarget;
 	unsigned int RFWrite;
+<<<<<<< HEAD
 
 	unsigned int BranchType;
 	int forward_type;
@@ -263,6 +288,10 @@ struct {
 	int rd2;
 	int rd3;
 }HZ_data;
+=======
+	unsigned int BranchType;
+}controls;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 
 //extracts selected bits from instruction register (machine code)
 unsigned int extract_bits(int low, int high);
@@ -273,18 +302,29 @@ unsigned int extract_byte(int low, int value);
 //extends the sign of a extracted bits
 int sign_extender(int num, int MSB);
 
+<<<<<<< HEAD
 void viewDMEM();
 
 void pipe_reg();
 
 //prints all decoded instructions i instructions file
 void print_inst(unsigned int _pc , unsigned int instruction ,FILE* );
+=======
+//prints MEMORY in OUTPUT file
+void viewDMEM();
+
+//prints all decoded instructions i instructions file
+void print_inst(int opcode,int fun3,int rd,int rs1,int rs2,int imms,int imm,FILE* t);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 
 //compares address and data pair 
 bool comp(const pair<int , unsigned char>&a,const pair<int , unsigned char>&b);
 
+<<<<<<< HEAD
 void reg_file();
 
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 unsigned int BranchTarget_Addr;
 unsigned int instruction_type;
 unsigned int PC = 0;
@@ -292,13 +332,17 @@ static unsigned int regdestiny;
 static unsigned int SwOp2;
 int ALUresult;
 int Loaded_Data;
+<<<<<<< HEAD
 char output__byte=0;
 short output__halfword=0;
 int output__word=0;
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 int cycle_no = 0;
 int Imm_U;
 int Imm_B;
 int Imm_J;
+<<<<<<< HEAD
 int EXIT_signl;
 unsigned int EXIT_pc;
 int HAZARD;
@@ -325,10 +369,16 @@ FILE *brnch = fopen("./branch.txt","w");
 FILE *inpt = fopen("./knobs.txt","r");
 FILE *out1 = fopen("./MEM.txt","w");
 FILE *pfile = fopen("../output/pipeline_reg.txt", "w");
+=======
+
+FILE *out = fopen("./OUTPUT.txt","w");
+FILE *inst= fopen("./instructions.txt","w");
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 
 void run_riscvsim() {
   while(1) {
   	cout << "\n\n---------New cycle---------\n";
+<<<<<<< HEAD
 		write_back(); 
 		mem();
 		execute();
@@ -344,12 +394,20 @@ void run_riscvsim() {
 	if(print_pprg){
 		pipe_reg();
 	}
+=======
+    fetch();
+    decode();
+    execute();
+    mem();
+    write_back();
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
   }
 }
 
 // it is used to set the reset values
 //reset all registers and instruction memory content to 0
 void reset_proc() {
+<<<<<<< HEAD
 	data_cache = (data_line*)malloc(sizeof(data_line)*data_cachelines);
 	for(int i=0; i<data_cachelines; i++)
 	{
@@ -360,6 +418,8 @@ void reset_proc() {
 	{
 		ins_cache[i].words = (int*)malloc(sizeof(int)*ins_blocksize);
 	}
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 	for(int i=0; i<32; i++){
 		X[i]=0;
 	}
@@ -368,6 +428,7 @@ void reset_proc() {
 		MEM[i] = 0;
 	}
 	DMEM.clear();
+<<<<<<< HEAD
 
 	E_M_reg.bp_result=1;
 
@@ -456,6 +517,16 @@ void reset_proc() {
 	}
 
 
+=======
+	controls.ALUOp = -1;
+	controls.IsBranch = -1;
+	controls.MemOp = -1;
+	controls.Op2Select = -1;
+	controls.ResultSelect = -1;
+	controls.BranchTarget = -1;
+	controls.RFWrite = -1;
+	controls.BranchType = -1;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 }
 
 //load_program_memory reads the input memory, and pupulates the instruction 
@@ -469,11 +540,16 @@ void load_program_memory(char *file_name) {
     exit(1);
   }
   while(fscanf(fp, "%x %x", &address, &instruction) != EOF) {
+<<<<<<< HEAD
 	print_inst(address,instruction,inst);
     write_word(&MEM[0], address, instruction);
   }
 
   fscanf(inpt,"%d %d %d %d",&forward_knob,&print_regfile,&print_pprg,&spec_instruction);
+=======
+    write_word(&MEM[0], address, instruction);
+  }
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
   fclose(fp);
 }
 
@@ -511,6 +587,7 @@ void write_data_memory() {
 		fprintf(fp, "\n0x%08X : %02X %02X %02X %02X ",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
 	}
   fclose(fp);
+<<<<<<< HEAD
   FILE* ofile;
   ofile = fopen("../output/Output_File.txt", "w");
   if( ofile == NULL) {
@@ -568,10 +645,13 @@ void write_data_memory() {
 	fprintf(ofile,"CPI_perfect = %f\n", CPI_perfect);
 
 	fclose(ofile);
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 }
 
 //should be called when instruction is swi_exit
 void swi_exit() {
+<<<<<<< HEAD
 	write_to_DMEM();
 	write_data_memory();
 	fclose(out);
@@ -712,10 +792,32 @@ void fetch() {
 			}
 		
 	}
+=======
+	write_data_memory();
+	viewDMEM();
+	fclose(out);
+	fclose(inst);
+  exit(0);
+}
+
+
+int inc;
+//reads from the instruction memory and updates the instruction register
+void fetch() {
+	cout << "Fetch:\n";
+	instruction_register = *((unsigned int*)&MEM[PC]);
+	cout << "		instruction_register : ";
+	printf("%x\n", instruction_register);
+	cout << "		PC:" << PC<<endl;
+	fprintf(out,"0x%08X:",instruction_register);
+	inc++;
+	fprintf(inst,"%d:0x%X:0x%08X:",inc,PC,instruction_register);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 }
 
 //reads the instruction register, reads operand1, operand2 fromo register file, decides the operation to be performed in execute stage
 void decode() {
+<<<<<<< HEAD
 	
 	cout << "\n\nDecode:\n";
 
@@ -761,6 +863,11 @@ void decode() {
 			stall_d++;
 		}
 	}
+=======
+	cout << "\n\nDecode:\n";
+	unsigned int func3, rs1, rs2, rd, opcode;	
+
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 	opcode = extract_bits(0,6);cout <<"		opcode:"<<opcode<<endl;
 
 	rs1 = extract_bits(15,19);	
@@ -793,12 +900,17 @@ void decode() {
 	immJ += (extract_bits(21,30) << 1);
 	immJ = sign_extender(immJ, 20);
 	Imm_J = immJ;
+<<<<<<< HEAD
 
 	D_E_reg.operand2 = X[rs2];
+=======
+	
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 
 	switch(opcode){
 		// R-type
 		case(Rtype):{
+<<<<<<< HEAD
 		D_E_reg.controls.Op2Select = Op2_RF;
 			D_E_reg.controls.MemOp = NoMEMOp;
 			D_E_reg.controls.IsBranch = NoBranch;
@@ -814,12 +926,30 @@ void decode() {
 			}
 			
 			D_E_reg.operand1 = X[rs1];	
+=======
+			controls.Op2Select = Op2_RF;
+			controls.MemOp = NoMEMOp;
+			controls.IsBranch = NoBranch;
+			controls.ResultSelect = From_ALU;	
+			controls.RFWrite = Write;		
+	
+			func3 = extract_bits(12,14);
+			controls.ALUOp = func3;
+	
+			unsigned int func7 = extract_bits(25,31);
+			if(func7==32){
+				controls.ALUOp += func7;	
+			}
+			
+			operand1 = X[rs1];	
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			regdestiny = rd;
 			break;
 		}	
 
 		// I-type - JALR
 		case(ItypeJ):{
+<<<<<<< HEAD
 			D_E_reg.controls.ALUOp = 0;
 			D_E_reg.controls.Op2Select = Op2_Imm;
 			D_E_reg.controls.ResultSelect = From_PC;
@@ -830,11 +960,22 @@ void decode() {
 			D_E_reg.operand1 = X[rs1];
 			D_E_reg.controls.HAZARD_b = 1;
 			rs2 = 33;
+=======
+			controls.ALUOp = 0;
+			controls.Op2Select = Op2_Imm;
+			controls.ResultSelect = From_PC;
+			controls.MemOp = NoMEMOp;
+			controls.RFWrite = Write;
+			controls.IsBranch = Branch_From_ALU;
+			controls.BranchTarget = Branch_ImmJ;
+			operand1 = X[rs1];
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 	
 		// I-type - load
 		case(ItypeL):{
+<<<<<<< HEAD
 			D_E_reg.controls.ALUOp = 0;
 			D_E_reg.controls.Op2Select = Op2_Imm;
 			D_E_reg.controls.ResultSelect = From_MEM;
@@ -854,6 +995,26 @@ void decode() {
 				}
 				case(2):{
 					D_E_reg.controls.MemOp = MEM_lw;
+=======
+			controls.ALUOp = 0;
+			controls.Op2Select = Op2_Imm;	
+			controls.ResultSelect = From_MEM;
+			controls.RFWrite = Write;
+			controls.IsBranch = NoBranch;
+			operand1 = X[rs1];
+			func3 = extract_bits(12,14);	
+			switch(func3){
+				case(0):{
+					controls.MemOp = MEM_lb;
+					break;
+				}
+				case(1):{
+					controls.MemOp = MEM_lh;
+					break;
+				}
+				case(2):{
+					controls.MemOp = MEM_lw;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 					break;
 				}
 			}
@@ -862,6 +1023,7 @@ void decode() {
 	
 		// I-type - Arithmetic
 		case(ItypeA):{
+<<<<<<< HEAD
 			D_E_reg.controls.Op2Select = Op2_Imm;
 			D_E_reg.controls.MemOp = NoMEMOp;
 			D_E_reg.controls.ResultSelect = From_ALU;
@@ -873,11 +1035,24 @@ void decode() {
 			cout << "		Fun3:" << func3 << endl;
 			D_E_reg.operand1 = X[rs1];
 			rs2  = 33;
+=======
+			controls.Op2Select = Op2_Imm;
+			controls.MemOp = NoMEMOp;
+			controls.ResultSelect = From_ALU;
+			controls.RFWrite = Write;
+			controls.IsBranch = NoBranch;
+
+			func3 = extract_bits(12,14);
+			controls.ALUOp = func3;
+			cout << "		Fun3:" << func3 << endl;
+			operand1 = X[rs1];
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 		
 		// S-type
 		case(Stype):{
+<<<<<<< HEAD
 			D_E_reg.controls.Op2Select = Op2_ImmS;
 			D_E_reg.controls.ALUOp = 0;
 			D_E_reg.controls.RFWrite = NoWrite;
@@ -895,17 +1070,42 @@ void decode() {
 				}
 				case(2):{
 					D_E_reg.controls.MemOp = MEM_sw;
+=======
+			controls.Op2Select = Op2_ImmS;
+			controls.ALUOp = 0;
+			controls.RFWrite = NoWrite;
+			controls.IsBranch = NoBranch;
+
+			func3 = extract_bits(12,14);	
+			switch(func3){
+				case(0):{
+					controls.MemOp = MEM_sb;
+					break;
+				}
+				case(1):{
+					controls.MemOp = MEM_sh;
+					break;
+				}
+				case(2):{
+					controls.MemOp = MEM_sw;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 					break;
 				}
 			}
 
+<<<<<<< HEAD
 			D_E_reg.operand1 = X[rs1];
 			D_E_reg.op2= X[rs2];
+=======
+			operand1 = X[rs1];
+			SwOp2 = X[rs2];
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 	
 		// B-type
 		case(Btype):{
+<<<<<<< HEAD
 			D_E_reg.operand1=X[rs1];
 			D_E_reg.operand2=X[rs2];
 			func3 = extract_bits(12,14);
@@ -920,11 +1120,24 @@ void decode() {
 			D_E_reg.controls.HAZARD_b = 1;
 
 		
+=======
+			operand1=X[rs1];
+			operand2=X[rs2];
+			func3 = extract_bits(12,14);
+			controls.ALUOp=32;
+			controls.Op2Select= Op2_RF;
+			controls.RFWrite= NoWrite;
+			controls.IsBranch= Branched;
+			controls.BranchTarget= Branch_ImmB;
+			controls.BranchType=func3;
+        		controls.MemOp=NoMEMOp;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 		
 		// J-type
 		case(Jtype):{
+<<<<<<< HEAD
 			D_E_reg.controls.RFWrite= Write;
 			D_E_reg.controls.ResultSelect= From_PC;
 			D_E_reg.controls.BranchTarget= Branch_ImmJ;
@@ -935,11 +1148,20 @@ void decode() {
 			rs1 = 34;
 			rs2 = 33;
 			
+=======
+			controls.RFWrite= Write;
+			controls.ResultSelect= From_PC;
+			controls.BranchTarget= Branch_ImmJ;
+			controls.IsBranch= Branched;
+			controls.MemOp=NoMEMOp;
+			controls.BranchType=-1;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 	
 		// U-type - auipc
 		case(UtypeA):{
+<<<<<<< HEAD
 			D_E_reg.controls.RFWrite= Write;
 			D_E_reg.controls.ResultSelect= From_AUIPC;
 			D_E_reg.controls.ALUOp=0;
@@ -948,11 +1170,19 @@ void decode() {
 			D_E_reg.controls.Op2Select = Op2_ImmU;
 			D_E_reg.operand1=0;
 			rs1 = 34;
+=======
+			controls.RFWrite= Write;
+			controls.ResultSelect= From_AUIPC;
+			controls.ALUOp=0;
+			controls.IsBranch=NoBranch;
+			controls.MemOp=NoMEMOp;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 
 		// U-type - lui
 		case(UtypeL):{
+<<<<<<< HEAD
 			D_E_reg.controls.RFWrite= Write;
 			D_E_reg.controls.ALUOp=0;
 			D_E_reg.controls.ResultSelect= From_ImmU;
@@ -961,19 +1191,32 @@ void decode() {
 			D_E_reg.controls.Op2Select = Op2_ImmU;
 			D_E_reg.operand1=0;
 			rs1 = 34;
+=======
+			controls.RFWrite= Write;
+			controls.ResultSelect= From_ImmU;
+			controls.MemOp= NoMEMOp;
+			controls.IsBranch=NoBranch;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 		
 		// EXIT
 		case(EXIT):{
+<<<<<<< HEAD
 			EXIT_signl = _EXIT;
 			EXIT_pc = D_E_reg.pc;
 			rd = 32;
 			
+=======
+			fprintf(out,"EXIT \n");
+			fprintf(inst,"EXIT ");
+			swi_exit();	
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 		}
 	}
 
 	// Selects OP2 for ALU.
+<<<<<<< HEAD
 	
 		int H_val=0, H_val2 = 0;
 		if(rs1 == HZ_data.rd1 || rs2 == HZ_data.rd1)
@@ -1253,11 +1496,33 @@ fprintf(out,"\n");
 	
 	cout << "		operand1:" << D_E_reg.operand1<<endl;
 	cout << "		operand2:" << D_E_reg.operand2 << endl;
+=======
+	switch(controls.Op2Select){
+		case(Op2_RF):{
+			operand2 = X[rs2];
+			break;	
+		}
+		case(Op2_Imm):{
+			operand2 = imm;
+			break;
+		}
+		case(Op2_ImmS):{
+			operand2 = immS;
+			break;
+		}
+	}
+    print_inst( opcode, func3, rd, rs1, rs2, immS, imm,out);
+	print_inst( opcode, func3, rd, rs1, rs2, immS, imm,inst);
+	
+	cout << "		operand1:" << operand1<<endl;
+	cout << "		operand2:" << operand2 << endl;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 }
 
 //executes the ALU operation based on ALUop
 void execute(){
 	cout << "\n\nExecute:\n";
+<<<<<<< HEAD
 
 	if(D_E_reg.null)
 	{
@@ -1344,29 +1609,112 @@ void execute(){
 				if(E_M_reg.ALUresult){
 					D_E_reg.controls.IsBranch = NoBranch;
 					
+=======
+	int add,sub,_xor,_or,_and,sll,sra,slt,sltu;
+	unsigned int srl;
+
+	add = operand1 + operand2;
+	sub = operand1 - operand2;
+	_xor = operand1 ^ operand2;
+	_or = operand1 | operand2;
+	_and = operand1 & operand2;
+	sll = operand1 << operand2;
+	srl = (unsigned int)operand1 >> operand2;
+	sra = operand1 >> operand2;
+	slt = (operand1 < operand2)? 1 : 0 ;
+	
+	cout << "		ALUop:" << controls.ALUOp << endl;
+	switch(controls.ALUOp){
+		case(Add_op):{
+			ALUresult = add;
+			break;
+		}
+		case(Sub_op):{
+			ALUresult = sub;
+			break;
+		}
+		case(Xor_op):{
+			ALUresult = _xor;
+			break;
+		}
+		case(Or_op):{
+			ALUresult = _or;
+			break;
+		}
+		case(And_op):{
+			ALUresult = _and;
+			break;
+		}
+		case(Sll_op):{
+			ALUresult = sll;
+			break;
+		}
+		case(Srl_op):{
+			ALUresult = srl;
+			break;
+		}
+		case(Sra_op):{
+			ALUresult = sra;
+			break;
+		}
+		case(Slt_op):{
+			ALUresult = slt;
+			break;
+		}
+	}
+	cout << "		ALUresult:" << ALUresult<<endl;
+	if(controls.BranchTarget == Branch_ImmJ){
+		BranchTarget_Addr = Imm_J + PC;	
+	}
+	else if (controls.BranchTarget == Branch_ImmB){
+		BranchTarget_Addr = Imm_B + PC;
+	}
+	if(controls.IsBranch == Branched){
+		switch(controls.BranchType){
+			case(BEQ):{
+				if(ALUresult){
+					controls.IsBranch = NoBranch;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				}
 				break;
 			}
 			case(BNE):{
+<<<<<<< HEAD
 				if(!E_M_reg.ALUresult){
 					D_E_reg.controls.IsBranch = NoBranch;
+=======
+				if(!ALUresult){
+					controls.IsBranch = NoBranch;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				}
 				break;
 			}
 			case(BGE):{
+<<<<<<< HEAD
 				if((E_M_reg.ALUresult & (1<<31))||(D_E_reg.operand1<D_E_reg.operand2)){
 					D_E_reg.controls.IsBranch = NoBranch;		
+=======
+				if((ALUresult & (1<<31))||(operand1<operand2)){
+					controls.IsBranch = NoBranch;		
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				}
 				break;
 			}
 			case(BLT):{
+<<<<<<< HEAD
 				if((!(E_M_reg.ALUresult & (1<<31)))||(D_E_reg.operand1>=D_E_reg.operand2)){
 
 					D_E_reg.controls.IsBranch = NoBranch;
+=======
+				if((!(ALUresult & (1<<31)))||(operand1>=operand2)){
+
+					controls.IsBranch = NoBranch;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				}
 				break;
 			}
 		}
+<<<<<<< HEAD
 		instruction_register = D_E_reg.instruction;
 		int dummy = extract_bits(0, 6);
 		
@@ -1456,17 +1804,42 @@ void mem() {
 				datacache(0, E_M_reg.ALUresult, 0);
 				M_W_reg.ld_result = output_byte;
 				printf("		loaded :  %02x",M_W_reg.ld_result);
+=======
+	}
+}
+
+
+//perform the memory operation
+void mem() {
+	cout << "\n\nMemory:\n";
+	cout << "		MemOp: " << controls.MemOp << endl;
+	if(controls.MemOp != NoMEMOp){
+		
+		switch(controls.MemOp){
+			//loads byte
+			case(MEM_lb):{
+				Loaded_Data = DMEM[ALUresult];
+				printf("		loaded :  %02x",Loaded_Data);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				break;
 			}
 			//loads half word
 			case(MEM_lh):{
+<<<<<<< HEAD
 				datacache(0, E_M_reg.ALUresult, 1);
 				M_W_reg.ld_result = output_halfword;
 				printf("		loaded :  %02x",M_W_reg.ld_result);
+=======
+				Loaded_Data = DMEM[ALUresult+1];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult];
+				printf("		loaded :  %02x",Loaded_Data);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				break;
 			}
 			//loads word
 			case(MEM_lw):{
+<<<<<<< HEAD
 				datacache(0, E_M_reg.ALUresult, 2);
 				M_W_reg.ld_result = output_word;
 				printf("		loaded :  %02x",M_W_reg.ld_result);
@@ -1479,31 +1852,69 @@ void mem() {
 				datacache(1, E_M_reg.ALUresult, 2);
 				cout << "		stored :   " ;
 				printf( "				%08X\n  		%02x %02x %02x %02x  ",E_M_reg.ALUresult,DMEM[E_M_reg.ALUresult+3],DMEM[E_M_reg.ALUresult+2],DMEM[E_M_reg.ALUresult+1],DMEM[E_M_reg.ALUresult]);
+=======
+				Loaded_Data = DMEM[ALUresult+3];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult+2];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult+1];
+				Loaded_Data = Loaded_Data << 8;
+				Loaded_Data = Loaded_Data + DMEM[ALUresult];
+				printf("		loaded :  %02x",Loaded_Data);
+				break;
+			}	
+			//stores word	
+			case(MEM_sw):{
+				DMEM[ALUresult] = extract_byte(0,SwOp2);
+				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
+				DMEM[ALUresult+2] = extract_byte(16,SwOp2);
+				DMEM[ALUresult+3] = extract_byte(24,SwOp2);
+				cout << "		stored :   " ;
+				printf( "  %02x %02x %02x %02x  ",DMEM[ALUresult+3],DMEM[ALUresult+2],DMEM[ALUresult+1],DMEM[ALUresult]);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				break;
 			}
 			//stores half word
 			case(MEM_sh):{
+<<<<<<< HEAD
 				input_halfword = E_M_reg.op2;
 				datacache(1, E_M_reg.ALUresult, 1);
 				cout << "		Stored : " ;
 				printf( " %02x %02x ",DMEM[E_M_reg.ALUresult],DMEM[E_M_reg.ALUresult+1]);
+=======
+				DMEM[ALUresult] = extract_byte(0,SwOp2);
+				DMEM[ALUresult+1] = extract_byte(8,SwOp2);
+				cout << "		Stored : " ;
+				printf( " %02x %02x ",DMEM[ALUresult+1],DMEM[ALUresult]);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				break;
 			}
 			//stores byte
 			case(MEM_sb):{
+<<<<<<< HEAD
 				input_byte = E_M_reg.op2;
 				datacache(1, E_M_reg.ALUresult, 0);
 				cout << "		Stored : " ;
 				printf( "  %02x  ",DMEM[E_M_reg.ALUresult]);
+=======
+				
+				DMEM[ALUresult] = extract_byte(0,SwOp2);
+				cout << "		Stored : " ;
+				printf( "  %02x  ",DMEM[ALUresult]);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 				break;
 			}
 		}
 	}
+<<<<<<< HEAD
 	M_W_reg.controls = E_M_reg.controls;
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 }
 
 //writes the results back to register file
 void write_back() {
+<<<<<<< HEAD
 	
 	instruction_register = M_W_reg.instruction;
 	if(M_W_reg.null)
@@ -1551,21 +1962,78 @@ void write_back() {
 				}
 				case(From_AUIPC):{
 					X[regdestiny] = M_W_reg.pc + M_W_reg.ALUresult;
+=======
+	cout << "\n\nWrite_back:\n";
+	cout << "		RFWrite :" << controls.RFWrite<<endl;
+	
+	if(controls.RFWrite){
+		if(regdestiny){
+			switch(controls.ResultSelect){
+				case(From_ALU):{
+					X[regdestiny] = ALUresult;
+					break;
+				}
+				case(From_ImmU):{
+					X[regdestiny] = Imm_U; 
+					break;
+				}
+				case(From_MEM):{
+					X[regdestiny] = Loaded_Data; 
+					break;
+				}
+				case(From_PC):{
+					X[regdestiny] = PC + 4; 
+					break;
+				}
+				case(From_AUIPC):{
+					X[regdestiny] = PC + Imm_U;
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 					break;
 				}
 			}
 
 			cout <<"		rd: X" << regdestiny<<endl;
 			cout << "		X[rd]:" << X[regdestiny] << endl;
+<<<<<<< HEAD
 			
 			fprintf(out1,"X%d:0x%08X\n",regdestiny,X[regdestiny]);
+=======
+			fprintf(out,"X%d:0x%08X\n",regdestiny,X[regdestiny]);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 		}
 		else
 		cout << "		rd: X0"<<endl;
 	}
+<<<<<<< HEAD
 
 }
 
+=======
+	
+	viewDMEM();
+	switch(controls.IsBranch)
+	{
+		case(NoBranch):{
+			PC = PC + 4;
+			break;
+		}
+		case(Branched):{
+			PC =  BranchTarget_Addr;
+			break;
+		}
+		case(Branch_From_ALU):{
+			PC = ALUresult;
+			break;
+		}
+	}
+	
+	cycle_no++;
+	cout << "CYCLE_COMPLETED: "<<cycle_no<<endl;
+
+}
+
+
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 int read_word(unsigned char *mem, unsigned int address) {
   int *data;
   data =  (int*) (mem + address);
@@ -1578,6 +2046,11 @@ void write_word(unsigned char *mem, unsigned int address, unsigned int data) {
   *data_p = data;
 }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 unsigned int extract_bits(int low, int high){
 	unsigned int foo = instruction_register;
 	foo = foo << (31 - high);
@@ -1592,6 +2065,10 @@ unsigned int extract_byte(int low, int value){
 	return foo;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 int sign_extender(int num, int MSB){
 	if(num & (1<<MSB)){
 		return num - pow(2, MSB+1);
@@ -1601,6 +2078,7 @@ int sign_extender(int num, int MSB){
 
 bool comp(const pair<int , unsigned char>&a,const pair<int , unsigned char>&b){
 	return a.first > b.first;
+<<<<<<< HEAD
 }			
 
 void reg_file(){
@@ -1666,10 +2144,13 @@ void pipe_reg(){
 		fprintf(pfile,"Result select = %d\n",M_W_reg.controls.ResultSelect);		
 	}
 
+=======
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 }
 
 void viewDMEM(){
 
+<<<<<<< HEAD
     vector<pair< int , unsigned char> > vec;
 
     for(auto& it : DMEM){
@@ -1723,13 +2204,39 @@ void print_inst(unsigned int _pc,unsigned int _ins,FILE *t)
 	immJ += (extract_bits(21,30) << 1);
 	immJ = sign_extender(immJ, 20);
 
+=======
+	vector<pair< int , unsigned char> > vec;
+
+	for(auto& it : DMEM){
+		vec.push_back(it);
+	}
+	sort(vec.begin(),vec.end(),comp);
+	if(DMEM.size())
+	fprintf(out,"--- MEMORY ---\n");
+	else
+	fprintf(out,"-\n");
+	for(auto& m : vec){
+		if(!(m.first%4))
+		fprintf(out, "0x%08X:%02X %02X %02X %02X\n",m.first,DMEM[m.first+3],DMEM[m.first+2],DMEM[m.first+1],DMEM[m.first]);
+	}
+	fprintf(out,"\n");
+}
+
+void print_inst(int opcode,int func3,int rd,int rs1,int rs2,int imms,int imm,FILE *t)
+{
+	
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 	switch(opcode){
 		// I-type - Arithmetic
 		case(ItypeA):
 		// R-type
 		case(Rtype):{
 	
+<<<<<<< HEAD
 			switch(func3){
+=======
+			switch(controls.ALUOp){
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			case(Add_op):{
 				fprintf(t,"ADD");
 				break;
@@ -1819,13 +2326,21 @@ void print_inst(unsigned int _pc,unsigned int _ins,FILE *t)
 					break;
 				}
 			}
+<<<<<<< HEAD
 			fprintf(t," x%d %d(x%d)",rs2,immS,rs1);
+=======
+			fprintf(t," x%d %d(x%d)",rs2,imms,rs1);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 	
 		// B-type
 		case(Btype):{
+<<<<<<< HEAD
 			switch(func3){
+=======
+			switch(controls.BranchType){
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			case(BEQ):{
 				fprintf(t,"BEQ");
 				break;
@@ -1843,24 +2358,37 @@ void print_inst(unsigned int _pc,unsigned int _ins,FILE *t)
 				break;
 			}
 			}
+<<<<<<< HEAD
 			fprintf(t," x%d x%d %d",rs1,rs2,immB);
+=======
+			fprintf(t," x%d x%d %d",rs1,rs2,Imm_B);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 		
 		// J-type
 		case(Jtype):{
+<<<<<<< HEAD
 			fprintf(t,"JAL x%d %d",rd,immJ);
+=======
+			fprintf(t,"JAL x%d %d",rd,Imm_J);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 	
 		// U-type - auipc
 		case(UtypeA):{
+<<<<<<< HEAD
 			fprintf(t,"AUIPC x%d 0x%x",rd ,immU>>12);
+=======
+			fprintf(t,"AUIPC x%d 0x%x",rd ,Imm_U>>12);
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
 			break;
 		}
 
 		// U-type - lui
 		case(UtypeL):{
+<<<<<<< HEAD
 			fprintf(t,"LUI x%d 0x%x",rd,immU>>12);
 			break;
 		}
@@ -3002,3 +3530,12 @@ int inscache(unsigned int addr)
 		}
 	}
 }
+=======
+			fprintf(t,"LUI x%d 0x%x",rd,Imm_U>>12);
+			break;
+		}
+		
+	}
+	fprintf(t,"\n");
+}	
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59

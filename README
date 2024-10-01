@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ================================================
 RISC-V simulator PROJECT PHASE - 1
 ================================================
@@ -29,6 +30,39 @@ CS204-Project
       |- elements_sum.mc
       |- fibonacci.mc
       |- bubblesort.mc
+=======
+================================================
+RISC-V simulator PROJECT PHASE - 1
+================================================
+
+README
+
+Table of contents
+1. Directory Structure
+2. How to build
+3. How to execute
+
+
+
+Directory Structure:
+--------------------
+CS204-Project
+  |
+  |- bin
+      |- myRISCSim
+  |- doc
+      |- design-doc.docx
+  |- include
+      |- myRISCVSim.h
+  |- src
+      |- main.cpp
+      |- Makefile
+      |- myRISCVSim.cpp
+  |- test
+      |- elements_sum.mc
+      |- fibonacci.mc
+      |- bubblesort.mc
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
       |- input.mc
   |-simulator
       |-simulator.py
@@ -37,6 +71,7 @@ CS204-Project
       |-templates
          |-home.html
       |-static
+<<<<<<< HEAD
 	 |-styles.css
 
 How to execute
@@ -44,3 +79,12 @@ How to execute
 Change your workflow into the simulator directory
 Then, run:
 	python simulator.py
+=======
+	 |-styles.css
+
+How to execute
+--------------
+Change your workflow into the simulator directory
+Then, run:
+	python simulator.py
+>>>>>>> 4a378ac17cf73c783006944a51659c5ed7234d59
