@@ -7,6 +7,9 @@ Project Name: Functional Simulator for subset of RISCV Processor
 Developer's Name: Karthik N Dasaraju, Pavithran Goud, Kola Sai Datta, Rishik Vardhan Vudem 
 */
 
+/*
+commenting for contribution #RISHIKVUDEM
+*/
 
 /* myRISCVSim.cpp
    Purpose of this file: implementation file for myRISCVSim
