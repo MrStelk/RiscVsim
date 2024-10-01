@@ -1,0 +1,1 @@
+This bin folder contains all binary files.
