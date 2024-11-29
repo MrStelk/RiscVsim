@@ -1,0 +1,18 @@
+1:LUI x4 0x10001
+2:ADDi x5 x0 10
+3:ADDi x6 x0 0
+4:SW x6 0(x4)
+5:ADDi x6 x6 1
+6:ADDi x4 x4 4
+7:BLT x6 x5 -12
+8:LUI x4 0x10001
+9:ADDi x8 x0 0
+10:ADDi x11 x0 0
+11:ADDi x12 x0 10
+12:LW x7 0(x4)
+13:ADDi x4 x4 4
+14:ADD x8 x8 x7
+15:ADDi x11 x11 1
+16:BLT x11 x12 -16
+17:SW x8 0(x4)
+18:EXIT
